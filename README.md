@@ -3,7 +3,7 @@
 SQRL (Secure Quick Reliable Login) for the .Net Standard runtimes.
 
 ## Secure Quick Reliable Login
-Is a highly secure user privacy based authentication system that removes the need for users to have more than one password for a global identity https://www.grc.com/sqrl/sqrl.htm for more information of the protocal.
+Is a highly secure user privacy based authentication system that removes the need for users to have more than one password for a global identity https://www.grc.com/sqrl/sqrl.htm for more information of the protocol.
 
 ## How to install
 You can install this as a package by running the following:
@@ -50,4 +50,4 @@ You will probably of noticed that the AddSqrl has options these are explained in
 This package is a work in progress but is working for a simple login and out the SQRL protocal requires some exstra stuff to be done to be fully compleate but this will not take long.
 
 ## Warning
-It is the publishers beleafe that this code is secure and crypto correct but I am awaiting confermation on this.
+It is the publishers belief that this code is secure and crypto correct but I am awaiting confirmation on this.
