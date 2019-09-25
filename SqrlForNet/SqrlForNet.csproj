@@ -8,6 +8,12 @@
     <Authors>Liam Raper</Authors>
     <Description>SQRL for the .Net Standard runtimes. Secure Quick Reliable Login is a highly secure user privacy based authentication system that removes the need for users to have more than one password for a global identity https://www.grc.com/sqrl/sqrl.htm for more information of the protocal.</Description>
     <Copyright>Liam Raper 2019</Copyright>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageProjectUrl>https://github.com/TechLiam/SQRL-For-Dot-Net-Standard</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/TechLiam/SQRL-For-Dot-Net-Standard/blob/master/LICENSE</RepositoryUrl>
+    <PackageTags>SQRL, Authentication, ASP.net, ASP.net core</PackageTags>
+    <PackageReleaseNotes>0.1.0 - Beta release awaiting feedback from SQRL developer groups</PackageReleaseNotes>
+    <NeutralLanguage>en-GB</NeutralLanguage>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
