@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.29306.81
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqrlForNet", "SqrlForNet\SqrlForNet.csproj", "{D8AE1B61-9967-49A8-8543-0E5CBD929702}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{D8AE1B61-9967-49A8-8543-0E5CBD929702}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D8AE1B61-9967-49A8-8543-0E5CBD929702}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D8AE1B61-9967-49A8-8543-0E5CBD929702}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D8AE1B61-9967-49A8-8543-0E5CBD929702}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {AF7F16DE-C09B-4D43-83B7-9D081DD293A1}
+	EndGlobalSection
+EndGlobal

@@ -1,0 +1,30 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
+    <Version>0.1.0</Version>
+    <Authors>Liam Raper</Authors>
+    <Description>SQRL for the .Net Standard runtimes. Secure Quick Reliable Login is a highly secure user privacy based authentication system that removes the need for users to have more than one password for a global identity https://www.grc.com/sqrl/sqrl.htm for more information of the protocal.</Description>
+    <Copyright>Liam Raper 2019</Copyright>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <NoWarn />
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <WarningsAsErrors />
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="BlowFish" Version="1.0.2" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication" Version="2.2.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Http" Version="2.2.2" />
+    <PackageReference Include="Net.Codecrete.QrCodeGenerator" Version="1.4.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Chaos.NaCl\" />
+  </ItemGroup>
+
+</Project>
