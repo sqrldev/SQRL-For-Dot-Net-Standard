@@ -1,3 +1,4 @@
+![alt text](https://www.grc.com/sqrl/SQRL_Logo_80x80.png "SQRL Logo")
 # SQRL For .Net Standard
 SQRL (Secure Quick Reliable Login) for the .Net Standard runtimes.
 
