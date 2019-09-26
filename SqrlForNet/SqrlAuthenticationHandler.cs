@@ -120,6 +120,7 @@ namespace SqrlForNet
 
                 return Task.FromResult(HandleRequestResult.Success(ticket));
             }
+            //We are specifically not returning any body in the response here as they clearly don't have a valid purpose to be here
             return Task.FromResult(HandleRequestResult.Handle());
         }
 
