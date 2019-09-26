@@ -45,7 +45,11 @@ namespace SqrlForNet
 
         public Func<string, HttpContext, string> GetUserVuk;
 
+        public Func<string, HttpContext, string> GetUserSuk;
+
         public Action<string, HttpContext> UnlockUser;
+
+        public Action<string, HttpContext> LockUser { get; set; }
 
         public Action<string, bool> RemoveNut;
 
@@ -202,6 +206,16 @@ namespace SqrlForNet
             if (UnlockUser == null)
             {
                 throw new ArgumentException($"{nameof(UnlockUser)} should be set");
+            }
+
+            if (LockUser == null)
+            {
+                throw new ArgumentException($"{nameof(LockUser)} should be set");
+            }
+
+            if (GetUserVuk == null)
+            {
+                throw new ArgumentException($"{nameof(GetUserVuk)} should be set");
             }
 
         }

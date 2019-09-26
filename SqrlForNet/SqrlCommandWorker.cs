@@ -47,7 +47,9 @@ namespace SqrlForNet
         {
             Query,
             Ident,
-            Unsupported
+            Disable,
+            Unsupported,
+            Enable
         }
 
         private enum NutValidationResult
@@ -72,6 +74,12 @@ namespace SqrlForNet
                     break;
                 case Command.Ident:
                     Ident();
+                    break;
+                case Command.Disable:
+                    Disable();
+                    break;
+                case Command.Enable:
+                    Enable();
                     break;
                 case Command.Unsupported:
                     Unsupported();
@@ -331,15 +339,20 @@ namespace SqrlForNet
 
         private void TryUnlockUser(Dictionary<string, string> clientParams)
         {
-            if (!clientParams.ContainsKey("suk") || !clientParams.ContainsKey("vuk"))
+            if (!Request.Form.ContainsKey("urs"))
             {
-                SendResponse(Tif.IpMatch | Tif.CommandFailed | Tif.ClientFailed);
+                SendResponse(Tif.IpMatch | Tif.IdMatch | Tif.CommandFailed | Tif.ClientFailed);
+                return;
             }
             var idk = clientParams["idk"];
-            var usersVuk = Options.GetUserVuk.Invoke(idk, Request.HttpContext);
-            if (usersVuk != clientParams["vuk"])
+            var message = Encoding.ASCII.GetBytes(Request.Form["client"] + Request.Form["server"]);
+            var usersVuk = Base64UrlTextEncoder.Decode(Options.GetUserVuk.Invoke(idk, Request.HttpContext));
+            var urs = Base64UrlTextEncoder.Decode(Request.Form["urs"]);
+            
+            if (!Ed25519.Verify(urs, message, usersVuk))
             {
                 SendResponse(Tif.IpMatch | Tif.CommandFailed | Tif.ClientFailed);
+                return;
             }
             Options.UnlockUser.Invoke(idk, Request.HttpContext);
             SendResponse(Tif.IdMatch | Tif.IpMatch, !AuthorizeNut(Request.Query["nut"]));
@@ -361,12 +374,31 @@ namespace SqrlForNet
 
         private void Disable()
         {
-
+            var clientParams = GetClientParams();
+            var userLookUp = LookUpUsers(clientParams);
+            if (userLookUp.UserExists == UserLookUpResult.Exists)
+            {
+                var idk = clientParams["idk"];
+                Options.LockUser.Invoke(idk, Request.HttpContext);
+            }
+            else
+            {
+                Unsupported();
+            }
         }
 
         private void Enable()
         {
-
+            var clientParams = GetClientParams();
+            var userLookUp = LookUpUsers(clientParams);
+            if (userLookUp.UserExists == UserLookUpResult.Disabled)
+            {
+                TryUnlockUser(clientParams);
+            }
+            else
+            {
+                Unsupported();
+            }
         }
 
         private void Remove()
@@ -491,6 +523,13 @@ namespace SqrlForNet
             if (includeCpsUrl)
             {
                 responseMessageBuilder.AppendLine("url=/login-sqrl?cps=" + GenerateCpsCode());
+            }
+
+            if ((tifValue.HasFlag(Tif.IdMatch) || tifValue.HasFlag(Tif.PreviousIdMatch) || tifValue.HasFlag(Tif.SqrlDisabled)))
+            {
+                var idk = GetClientParams()["idk"];
+                var suk = Options.GetUserSuk.Invoke(idk, Request.HttpContext);
+                responseMessageBuilder.AppendLine("suk=" + Base64UrlTextEncoder.Encode(Encoding.ASCII.GetBytes(suk)));
             }
 
             var responseMessageBytes = Encoding.ASCII.GetBytes(Base64UrlTextEncoder.Encode(Encoding.ASCII.GetBytes(responseMessageBuilder.ToString())));

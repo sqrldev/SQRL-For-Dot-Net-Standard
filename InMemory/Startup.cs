@@ -34,12 +34,14 @@ namespace InMemory
                     options.UserExists = UserExists;
                     options.UpdateUserId = UpdateUserId;
                     options.UnlockUser = UnlockUser;
+                    options.LockUser = LockUser;
+                    options.GetUserSuk = GetUserSuk;
                     options.Events.OnTicketReceived += OnTicketReceived;
                 });
             services.AddMvc();
         }
 
-        private Task OnTicketReceived(TicketReceivedContext arg)
+        private Task OnTicketReceived(TicketReceivedContext context)
         {
 
             return Task.CompletedTask;
@@ -74,6 +76,11 @@ namespace InMemory
             _sqrlUsers.Single(x => x.UserId == userId).Locked = false;
         }
 
+        private void LockUser(string userId, HttpContext context)
+        {
+            _sqrlUsers.Single(x => x.UserId == userId).Locked = true;
+        }
+
         private void UpdateUserId(string newUserId, string newSuk, string newVuk, string userId, HttpContext context)
         {
             var user = _sqrlUsers.Single(x => x.UserId == userId);
@@ -92,7 +99,12 @@ namespace InMemory
         {
             return _sqrlUsers.Single(x => x.UserId == userId).Vuk;
         }
-        
+
+        private string GetUserSuk(string userId, HttpContext context)
+        {
+            return _sqrlUsers.Single(x => x.UserId == userId).Suk;
+        }
+
         public void Configure(IApplicationBuilder app, IHostingEnvironment env)
         {
             if (env.IsDevelopment())
