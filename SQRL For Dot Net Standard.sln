@@ -3,7 +3,11 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.29306.81
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqrlForNet", "SqrlForNet\SqrlForNet.csproj", "{D8AE1B61-9967-49A8-8543-0E5CBD929702}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SqrlForNet", "SqrlForNet\SqrlForNet.csproj", "{D8AE1B61-9967-49A8-8543-0E5CBD929702}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Examples", "Examples", "{A6A7D74B-A74B-4715-BDAB-E916B9293113}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "InMemory", "InMemory\InMemory.csproj", "{54492F00-E135-45B0-8818-4A23A68DF9B2}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,9 +19,16 @@ Global
 		{D8AE1B61-9967-49A8-8543-0E5CBD929702}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D8AE1B61-9967-49A8-8543-0E5CBD929702}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D8AE1B61-9967-49A8-8543-0E5CBD929702}.Release|Any CPU.Build.0 = Release|Any CPU
+		{54492F00-E135-45B0-8818-4A23A68DF9B2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{54492F00-E135-45B0-8818-4A23A68DF9B2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{54492F00-E135-45B0-8818-4A23A68DF9B2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{54492F00-E135-45B0-8818-4A23A68DF9B2}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{54492F00-E135-45B0-8818-4A23A68DF9B2} = {A6A7D74B-A74B-4715-BDAB-E916B9293113}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {AF7F16DE-C09B-4D43-83B7-9D081DD293A1}

@@ -341,6 +341,7 @@ namespace SqrlForNet
             {
                 var idk = clientParams["idk"];
                 Options.CreateUser.Invoke(idk, clientParams["suk"], clientParams["vuk"], Request.HttpContext);
+                AuthorizeNut(Request.Query["nut"]);
                 SendResponse(Tif.IdMatch | Tif.IpMatch);
             }
             else

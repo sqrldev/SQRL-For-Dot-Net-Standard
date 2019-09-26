@@ -1,0 +1,16 @@
+﻿@page
+@model InMemory.Pages.IndexModel
+<h1>Inmemory demo</h1>
+@if (!User.Identity.IsAuthenticated)
+{
+    <form method="post">
+        <button type="submit">Start SQRL login</button>
+    </form>
+}
+else
+{
+    <p>You are now logged in as @User.Identity.Name</p>
+    <form method="get" action="/logout">
+        <button type="submit">Logout</button>
+    </form>
+}
