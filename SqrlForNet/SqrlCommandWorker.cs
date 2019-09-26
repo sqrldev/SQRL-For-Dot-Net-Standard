@@ -577,17 +577,10 @@ namespace SqrlForNet
             return _optionsCache;
         }
         
-        /// <summary>
-        /// This is used to get a good source of entropy and it the 64-bit counter
-        /// </summary>
-        /// <param name="counter"></param>
-        /// <returns></returns>
-        [DllImport("Kernel32.dll")]
-        private static extern bool QueryPerformanceCounter(out long counter);
-
         public static string GenerateNut(byte[] key)
         {
-            QueryPerformanceCounter(out var counter);
+            var now = DateTime.UtcNow;
+            var counter = now.Day.ToString("00") + now.Month.ToString("00") + now.Year.ToString() + now.Ticks.ToString();//This is always be unique as day month and year will always go up and ticks will be unique on the day
             var blowFish = new BlowFish(key);
 
             var cipherText = blowFish.EncryptCBC(counter.ToString());
