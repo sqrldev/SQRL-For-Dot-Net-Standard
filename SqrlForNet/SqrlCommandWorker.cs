@@ -125,17 +125,24 @@ namespace SqrlForNet
             return false;
         }
 
+        private Dictionary<string, string> _clientParamsCache; //This is per-request as the SqrlCommandWorker is only initialized once per request
+
         private Dictionary<string, string> GetClientParams()
         {
-            if (!Request.HasFormContentType)
+            if (_clientParamsCache == null)
             {
-                return new Dictionary<string, string>();
+                if (!Request.HasFormContentType)
+                {
+                    return new Dictionary<string, string>();
+                }
+
+                _clientParamsCache = Encoding.ASCII.GetString(Base64UrlTextEncoder.Decode(Request.Form["client"]))
+                    .Replace("\r\n", "\n")
+                    .Split('\n')
+                    .Where(x => x.Contains("="))
+                    .ToDictionary(x => x.Split('=')[0], x => x.Split('=')[1]);
             }
-            return Encoding.ASCII.GetString(Base64UrlTextEncoder.Decode(Request.Form["client"]))
-                .Replace("\r\n", "\n")
-                .Split('\n')
-                .Where(x => x.Contains("="))
-                .ToDictionary(x => x.Split('=')[0], x => x.Split('=')[1]);
+            return _clientParamsCache;
         }
 
         private NutValidationResult NutStatus()
@@ -154,7 +161,7 @@ namespace SqrlForNet
             }
 
             var clientParams = GetClientParams();
-            if (clientParams.ContainsKey("opt") && !ParseOpts(clientParams["opt"])[OptKey.noiptest])
+            if (clientParams.ContainsKey("opt") && !ParseOpts()[OptKey.noiptest])
             {
                 if (nutInfo.IpAddress != Request.HttpContext.Connection.RemoteIpAddress.ToString())
                 {
@@ -291,8 +298,7 @@ namespace SqrlForNet
 
         private bool AuthorizeNut(string nut)
         {
-            var clientParams = GetClientParams();
-            var opts = ParseOpts(clientParams["opt"]);
+            var opts = ParseOpts();
             if (!opts[OptKey.cps])
             {
                 var nutInfo = Options.GetNut.Invoke(nut, false);
@@ -554,15 +560,21 @@ namespace SqrlForNet
             return versions.ToArray();
         }
 
-        private Dictionary<OptKey, bool> ParseOpts(string opts)
+        private Dictionary<OptKey, bool> _optionsCache;
+
+        private Dictionary<OptKey, bool> ParseOpts()
         {
-            var options = opts.Split('~');
-            return Enum.GetNames(typeof(OptKey))
-                .ToDictionary(
-                    supportedOption =>
-                        (OptKey)Enum.Parse(typeof(OptKey), supportedOption),
-                    supportedOption =>
-                        options.Any(x => x.ToLower() == supportedOption));
+            if (_optionsCache == null)
+            {
+                var options = GetClientParams()["opt"].Split('~');
+                _optionsCache = Enum.GetNames(typeof(OptKey))
+                    .ToDictionary(
+                        supportedOption =>
+                            (OptKey) Enum.Parse(typeof(OptKey), supportedOption),
+                        supportedOption =>
+                            options.Any(x => x.ToLower() == supportedOption));
+            }
+            return _optionsCache;
         }
         
         /// <summary>
