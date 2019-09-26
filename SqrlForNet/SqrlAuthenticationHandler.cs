@@ -1,4 +1,5 @@
-﻿using System.Security.Claims;
+﻿using System;
+using System.Security.Claims;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
@@ -65,6 +66,10 @@ namespace SqrlForNet
             {
                 return CheckRequest();
             }
+            else if (Request.Query.ContainsKey("cps"))
+            {
+                return CheckCpsRequest();
+            }
             else //For everything else we should only return a login page
             {
                 CommandWorker.QrCodePage();
@@ -83,6 +88,29 @@ namespace SqrlForNet
                 };
 
                 Options.RemoveNut.Invoke(Request.Query["check"], true);
+
+                var identity = new ClaimsIdentity(claims, Scheme.Name);
+                var principal = new ClaimsPrincipal(identity);
+                var ticket = new AuthenticationTicket(principal, Scheme.Name);
+
+                Options.Events.TicketReceived(new TicketReceivedContext(Context, Scheme, Options, ticket));
+
+                return Task.FromResult(HandleRequestResult.Success(ticket));
+            }
+            return Task.FromResult(HandleRequestResult.Handle());
+        }
+
+        private Task<HandleRequestResult> CheckCpsRequest()
+        {
+            var result = Options.GetUserIdByCpsSessionId.Invoke(Request.Query["cps"]);
+            if (!string.IsNullOrEmpty(result))
+            {
+                var claims = new[] {
+                    new Claim(ClaimTypes.NameIdentifier, result),
+                    new Claim(ClaimTypes.Name, Options.NameForAnonymous)
+                };
+
+                Options.RemoveCpsSessionId.Invoke(Request.Query["cps"]);
 
                 var identity = new ClaimsIdentity(claims, Scheme.Name);
                 var principal = new ClaimsPrincipal(identity);

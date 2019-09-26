@@ -273,8 +273,7 @@ namespace SqrlForNet
 
             if (userLookUp.UserExists == UserLookUpResult.Exists)
             {
-                AuthorizeNut(Request.Query["nut"]);
-                SendResponse(Tif.IdMatch | Tif.IpMatch);
+                SendResponse(Tif.IdMatch | Tif.IpMatch, !AuthorizeNut(Request.Query["nut"]));
             }
             else if (userLookUp.PrevUserExists == UserLookUpResult.Exists)
             {
@@ -290,17 +289,24 @@ namespace SqrlForNet
             }
         }
 
-        private void AuthorizeNut(string nut)
+        private bool AuthorizeNut(string nut)
         {
-            var nutInfo = Options.GetNut.Invoke(nut, false);
-            var authNutInfo = new NutInfo
+            var clientParams = GetClientParams();
+            var opts = ParseOpts(clientParams["opt"]);
+            if (!opts[OptKey.cps])
             {
-                FirstNut = nutInfo.FirstNut,
-                CreatedDate = DateTime.UtcNow.AddSeconds(Options.NutExpiresInSeconds),
-                IpAddress = nutInfo.IpAddress,
-                Idk = nutInfo.Idk
-            };
-            Options.StoreNut.Invoke(nut, authNutInfo, true);
+                var nutInfo = Options.GetNut.Invoke(nut, false);
+                var authNutInfo = new NutInfo
+                {
+                    FirstNut = nutInfo.FirstNut,
+                    CreatedDate = DateTime.UtcNow.AddSeconds(Options.NutExpiresInSeconds),
+                    IpAddress = nutInfo.IpAddress,
+                    Idk = nutInfo.Idk
+                };
+                Options.StoreNut.Invoke(nut, authNutInfo, true);
+                return true;
+            }
+            return false;
         }
 
         private void UpdateOldUser(Dictionary<string, string> clientParams)
@@ -313,8 +319,7 @@ namespace SqrlForNet
             {
                 var idk = clientParams["idk"];
                 Options.UpdateUserId.Invoke(idk, clientParams["suk"], clientParams["vuk"], clientParams["pidk"], Request.HttpContext);
-                AuthorizeNut(Request.Query["nut"]);
-                SendResponse(Tif.IdMatch | Tif.IpMatch);
+                SendResponse(Tif.IdMatch | Tif.IpMatch, !AuthorizeNut(Request.Query["nut"]));
             }
         }
 
@@ -331,8 +336,7 @@ namespace SqrlForNet
                 SendResponse(Tif.IpMatch | Tif.CommandFailed | Tif.ClientFailed);
             }
             Options.UnlockUser.Invoke(idk, Request.HttpContext);
-            AuthorizeNut(Request.Query["nut"]);
-            SendResponse(Tif.IdMatch | Tif.IpMatch);
+            SendResponse(Tif.IdMatch | Tif.IpMatch, !AuthorizeNut(Request.Query["nut"]));
         }
 
         private void TryCreateNewUser(Dictionary<string, string> clientParams)
@@ -341,8 +345,7 @@ namespace SqrlForNet
             {
                 var idk = clientParams["idk"];
                 Options.CreateUser.Invoke(idk, clientParams["suk"], clientParams["vuk"], Request.HttpContext);
-                AuthorizeNut(Request.Query["nut"]);
-                SendResponse(Tif.IdMatch | Tif.IpMatch);
+                SendResponse(Tif.IdMatch | Tif.IpMatch, !AuthorizeNut(Request.Query["nut"]));
             }
             else
             {
@@ -402,14 +405,15 @@ namespace SqrlForNet
             StoreNut(nut);
             var url = $"sqrl://{Request.Host}{Options.CallbackPath}?nut=" + nut;
             var checkUrl = $"{Request.Scheme}://{Request.Host}{Options.CallbackPath}?check=" + nut;
-            var responseMessageBytes = Encoding.ASCII.GetBytes(QrCodePageHtml(url, checkUrl));
+            var cancelUrl = Base64UrlTextEncoder.Encode(Encoding.ASCII.GetBytes($"{Request.Scheme}://{Request.Host}{Options.CancelledPath}"));
+            var responseMessageBytes = Encoding.ASCII.GetBytes(QrCodePageHtml(url, checkUrl, cancelUrl));
             Response.StatusCode = StatusCodes.Status200OK;
             Response.ContentType = "text/html";
             Response.ContentLength = responseMessageBytes.LongLength;
             Response.Body.Write(responseMessageBytes, 0, responseMessageBytes.Length);
         }
 
-        private string QrCodePageHtml(string url, string checkUrl)
+        private string QrCodePageHtml(string url, string checkUrl, string cancelUrl)
         {
             var responseMessage = new StringBuilder();
             responseMessage.AppendLine("<!DOCTYPE html>");
@@ -433,7 +437,7 @@ namespace SqrlForNet
             responseMessage.AppendLine("<body onload=\"setInterval(function(){ CheckAuto(); }, " + Options.CheckMillieSeconds + ");\">");
             responseMessage.AppendLine("<h1>SQRL login page</h1>");
             responseMessage.AppendLine("<img src=\"data:image/bmp;base64," + GetBase64QrCode(url) + "\">");
-            responseMessage.AppendLine($"<a href=\"{url}\">Sign in with SQRL</a>");
+            responseMessage.AppendLine($"<a href=\"{url}&can={cancelUrl}\">Sign in with SQRL</a>");
             responseMessage.AppendLine($"<a href=\"{checkUrl}\">Check manually your login here</a>");
             responseMessage.AppendLine("</body>");
             responseMessage.AppendLine("</html>");
@@ -468,7 +472,7 @@ namespace SqrlForNet
             return isAuthorized;
         }
 
-        private void SendResponse(Tif tifValue)
+        private void SendResponse(Tif tifValue, bool includeCpsUrl = false)
         {
             var responseMessageBuilder = new StringBuilder();
             var nut = GenerateNut(Options.EncryptionKey);
@@ -478,6 +482,11 @@ namespace SqrlForNet
             responseMessageBuilder.AppendLine("tif=" + tifValue.ToString("X"));
             responseMessageBuilder.AppendLine("qry=/login-sqrl?nut=" + nut);
 
+            if (includeCpsUrl)
+            {
+                responseMessageBuilder.AppendLine("url=/login-sqrl?cps=" + GenerateCpsCode());
+            }
+
             var responseMessageBytes = Encoding.ASCII.GetBytes(Base64UrlTextEncoder.Encode(Encoding.ASCII.GetBytes(responseMessageBuilder.ToString())));
             Response.StatusCode = StatusCodes.Status200OK;
             Response.ContentLength = responseMessageBytes.LongLength;
@@ -486,19 +495,23 @@ namespace SqrlForNet
 
         private void StoreNut(string nut)
         {
+            Options.StoreNut.Invoke(nut, NewNutInfo(), false);
+        }
+
+        private NutInfo NewNutInfo()
+        {
             NutInfo currentNut = null;
             if (Request.Query.ContainsKey("nut"))
             {
                 currentNut = Options.GetNut.Invoke(Request.Query["nut"], false);
             }
-            var nutInfo = new NutInfo
+            return new NutInfo
             {
                 CreatedDate = DateTime.UtcNow,
                 IpAddress = currentNut != null ? currentNut?.IpAddress : Request.HttpContext.Connection.RemoteIpAddress.ToString(),
                 Idk = currentNut != null && currentNut.Idk != null ? currentNut?.Idk : Request.Query.ContainsKey("nut") ? GetClientParams()["idk"] : null,
                 FirstNut = string.IsNullOrEmpty(currentNut?.FirstNut) ? Request.Query["nut"].ToString() : currentNut.FirstNut
             };
-            Options.StoreNut.Invoke(nut, nutInfo, false);
         }
 
         private string[] ParseVersions(string versionString)
@@ -551,8 +564,7 @@ namespace SqrlForNet
                     supportedOption =>
                         options.Any(x => x.ToLower() == supportedOption));
         }
-
-
+        
         /// <summary>
         /// This is used to get a good source of entropy and it the 64-bit counter
         /// </summary>
@@ -570,6 +582,12 @@ namespace SqrlForNet
             return Base64UrlTextEncoder.Encode(Encoding.ASCII.GetBytes(cipherText));
         }
 
+        public string GenerateCpsCode()
+        {
+            var code = Guid.NewGuid().ToString("N");
+            Options.StoreCpsSessionId.Invoke(code, GetClientParams()["idk"]);
+            return code;
+        }
 
     }
 }

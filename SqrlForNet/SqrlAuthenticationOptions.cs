@@ -17,6 +17,8 @@ namespace SqrlForNet
 
         public string NameForAnonymous { get; set; }
 
+        public string CancelledPath { get; set; }
+
         /// <summary>
         /// This is the function that is called with the UserId so that the app can look up the user
         /// </summary>
@@ -54,6 +56,17 @@ namespace SqrlForNet
         public Func<string, bool> CheckNutAuthorized;
 
         public Func<string, string> GetNutIdk;
+
+        /// <summary>
+        /// Store the CPS session
+        /// Param 1 - Session Id
+        /// Param 2 - UserId
+        /// </summary>
+        public Action<string,string> StoreCpsSessionId;
+
+        public Func<string, string> GetUserIdByCpsSessionId;
+
+        public Action<string> RemoveCpsSessionId;
 
         /// <summary>
         /// Used to store the nuts
@@ -107,6 +120,23 @@ namespace SqrlForNet
         {
             return AuthorizedNutList.Single(x => x.Key == nut || x.Value.FirstNut == nut).Value.Idk;
         }
+        
+        private static readonly Dictionary<string, string> CpsSessions = new Dictionary<string, string>();
+        
+        private void StoreCpsSessionIdMethod(string sessionId, string userId)
+        {
+            CpsSessions.Add(sessionId, userId);
+        }
+
+        private string GetUserIdByCpsSessionIdMethod(string sessionId)
+        {
+            return CpsSessions.ContainsKey(sessionId) ? CpsSessions[sessionId] : null;
+        }
+        
+        private void RemoveCpsSessionIdMethod(string sessionId)
+        {
+            CpsSessions.Remove(sessionId);
+        }
 
         public SqrlAuthenticationOptions()
         {
@@ -126,6 +156,10 @@ namespace SqrlForNet
             StoreNut = StoreNutMethod;
             CheckNutAuthorized = CheckNutAuthorizedMethod;
             GetNutIdk = GetNutIdkMethod;
+
+            StoreCpsSessionId = StoreCpsSessionIdMethod;
+            GetUserIdByCpsSessionId = GetUserIdByCpsSessionIdMethod;
+            RemoveCpsSessionId = RemoveCpsSessionIdMethod;
 
         }
 
