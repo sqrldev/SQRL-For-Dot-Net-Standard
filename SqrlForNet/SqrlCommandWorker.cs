@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
@@ -67,6 +68,7 @@ namespace SqrlForNet
 
         private void CommandAction(Command command)
         {
+            Debug.WriteLine("SQRL Log: Command:" + command.ToString());
             switch (command)
             {
                 case Command.Query:
@@ -344,16 +346,20 @@ namespace SqrlForNet
                 SendResponse(Tif.IpMatch | Tif.IdMatch | Tif.CommandFailed | Tif.ClientFailed);
                 return;
             }
+
             var idk = clientParams["idk"];
+
             var message = Encoding.ASCII.GetBytes(Request.Form["client"] + Request.Form["server"]);
             var usersVuk = Base64UrlTextEncoder.Decode(Options.GetUserVuk.Invoke(idk, Request.HttpContext));
             var urs = Base64UrlTextEncoder.Decode(Request.Form["urs"]);
-            
-            if (!Ed25519.Verify(urs, message, usersVuk))
+            var valid = Ed25519.Verify(urs, message, usersVuk);
+
+            if (!valid)
             {
                 SendResponse(Tif.IpMatch | Tif.CommandFailed | Tif.ClientFailed);
                 return;
             }
+
             Options.UnlockUser.Invoke(idk, Request.HttpContext);
             SendResponse(Tif.IdMatch | Tif.IpMatch, !AuthorizeNut(Request.Query["nut"]));
         }
@@ -380,6 +386,7 @@ namespace SqrlForNet
             {
                 var idk = clientParams["idk"];
                 Options.LockUser.Invoke(idk, Request.HttpContext);
+                SendResponse(Tif.IdMatch | Tif.IpMatch | Tif.SqrlDisabled);
             }
             else
             {
@@ -536,6 +543,9 @@ namespace SqrlForNet
             Response.StatusCode = StatusCodes.Status200OK;
             Response.ContentLength = responseMessageBytes.LongLength;
             Response.Body.Write(responseMessageBytes, 0, responseMessageBytes.Length);
+
+            Debug.WriteLine("SQRL Log: Sent TIF: " + tifValue.ToString());
+
         }
 
         private void StoreNut(string nut)
