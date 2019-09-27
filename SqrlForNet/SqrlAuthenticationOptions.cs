@@ -220,6 +220,11 @@ namespace SqrlForNet
                 throw new ArgumentException($"{nameof(GetUserVuk)} should be set");
             }
 
+            if (RemoveUser == null)
+            {
+                throw new ArgumentException($"{nameof(GetUserVuk)} should be set");
+            }
+
         }
     }
 }
