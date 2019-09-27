@@ -51,6 +51,8 @@ namespace SqrlForNet
 
         public Action<string, HttpContext> LockUser { get; set; }
 
+        public Action<string,HttpContext> RemoveUser { get; set; }
+
         public Action<string, bool> RemoveNut;
 
         public Func<string, bool, NutInfo> GetNut;

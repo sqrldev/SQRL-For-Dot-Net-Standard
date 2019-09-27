@@ -35,6 +35,7 @@ namespace InMemory
                     options.UpdateUserId = UpdateUserId;
                     options.UnlockUser = UnlockUser;
                     options.LockUser = LockUser;
+                    options.RemoveUser = RemoveUser;
                     options.GetUserSuk = GetUserSuk;
                     options.Events.OnTicketReceived += OnTicketReceived;
                 });
@@ -79,6 +80,11 @@ namespace InMemory
         private void LockUser(string userId, HttpContext context)
         {
             _sqrlUsers.Single(x => x.UserId == userId).Locked = true;
+        }
+
+        private void RemoveUser(string userId, HttpContext arg2)
+        {
+            _sqrlUsers.Remove(_sqrlUsers.Single(x => x.UserId == userId));
         }
 
         private void UpdateUserId(string newUserId, string newSuk, string newVuk, string userId, HttpContext context)

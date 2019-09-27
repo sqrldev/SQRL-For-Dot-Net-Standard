@@ -49,8 +49,9 @@ namespace SqrlForNet
             Query,
             Ident,
             Disable,
-            Unsupported,
-            Enable
+            Enable,
+            Remove,
+            Unsupported
         }
 
         private enum NutValidationResult
@@ -68,7 +69,6 @@ namespace SqrlForNet
 
         private void CommandAction(Command command)
         {
-            Debug.WriteLine("SQRL Log: Command:" + command.ToString());
             switch (command)
             {
                 case Command.Query:
@@ -82,6 +82,9 @@ namespace SqrlForNet
                     break;
                 case Command.Enable:
                     Enable();
+                    break;
+                case Command.Remove:
+                    Remove();
                     break;
                 case Command.Unsupported:
                     Unsupported();
@@ -364,6 +367,31 @@ namespace SqrlForNet
             SendResponse(Tif.IdMatch | Tif.IpMatch, !AuthorizeNut(Request.Query["nut"]));
         }
 
+        private void TryRemoveUser(Dictionary<string, string> clientParams)
+        {
+            if (!Request.Form.ContainsKey("urs"))
+            {
+                SendResponse(Tif.IpMatch | Tif.IdMatch | Tif.CommandFailed | Tif.ClientFailed);
+                return;
+            }
+
+            var idk = clientParams["idk"];
+
+            var message = Encoding.ASCII.GetBytes(Request.Form["client"] + Request.Form["server"]);
+            var usersVuk = Base64UrlTextEncoder.Decode(Options.GetUserVuk.Invoke(idk, Request.HttpContext));
+            var urs = Base64UrlTextEncoder.Decode(Request.Form["urs"]);
+            var valid = Ed25519.Verify(urs, message, usersVuk);
+
+            if (!valid)
+            {
+                SendResponse(Tif.IpMatch | Tif.CommandFailed | Tif.ClientFailed);
+                return;
+            }
+
+            Options.RemoveUser.Invoke(idk, Request.HttpContext);
+            SendResponse(Tif.IdMatch | Tif.IpMatch, !AuthorizeNut(Request.Query["nut"]));
+        }
+
         private void TryCreateNewUser(Dictionary<string, string> clientParams)
         {
             if (Options.CreateUser != null)
@@ -410,7 +438,16 @@ namespace SqrlForNet
 
         private void Remove()
         {
-
+            var clientParams = GetClientParams();
+            var userLookUp = LookUpUsers(clientParams);
+            if (userLookUp.UserExists == UserLookUpResult.Exists || userLookUp.UserExists == UserLookUpResult.Disabled)
+            {
+                TryRemoveUser(clientParams);
+            }
+            else
+            {
+                Unsupported();
+            }
         }
 
         private void Unsupported()
@@ -543,9 +580,6 @@ namespace SqrlForNet
             Response.StatusCode = StatusCodes.Status200OK;
             Response.ContentLength = responseMessageBytes.LongLength;
             Response.Body.Write(responseMessageBytes, 0, responseMessageBytes.Length);
-
-            Debug.WriteLine("SQRL Log: Sent TIF: " + tifValue.ToString());
-
         }
 
         private void StoreNut(string nut)
