@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
@@ -30,22 +31,28 @@ namespace InMemory
                 {
                     options.CheckMillieSeconds = 1000;
                     options.CreateUser = SqrlCreateUser;
-                    options.GetUserVuk = GetUserVuk;
                     options.UserExists = UserExists;
                     options.UpdateUserId = UpdateUserId;
-                    options.UnlockUser = UnlockUser;
-                    options.LockUser = LockUser;
                     options.RemoveUser = RemoveUser;
+                    options.LockUser = LockUser;
+                    options.UnlockUser = UnlockUser;
+                    options.GetUserVuk = GetUserVuk;
                     options.GetUserSuk = GetUserSuk;
                     options.Events.OnTicketReceived += OnTicketReceived;
                 });
             services.AddMvc();
         }
-
-        private Task OnTicketReceived(TicketReceivedContext context)
+        
+        public void Configure(IApplicationBuilder app, IHostingEnvironment env)
         {
+            if (env.IsDevelopment())
+            {
+                app.UseDeveloperExceptionPage();
+            }
 
-            return Task.CompletedTask;
+            app.UseAuthentication();
+
+            app.UseMvc();
         }
 
         public class SqrlUser
@@ -61,6 +68,8 @@ namespace InMemory
         }
 
         private static List<SqrlUser> _sqrlUsers = new List<SqrlUser>();
+
+        private static List<string> _sqrlAdminUserIds = new List<string>();
 
         private void SqrlCreateUser(string userId, string suk, string vuk, HttpContext context)
         {
@@ -110,17 +119,19 @@ namespace InMemory
         {
             return _sqrlUsers.Single(x => x.UserId == userId).Suk;
         }
-
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env)
+        
+        private Task OnTicketReceived(TicketReceivedContext context)
         {
-            if (env.IsDevelopment())
+            var userId = context.Principal.FindFirst(ClaimTypes.NameIdentifier).Value;
+            var claims = new List<Claim>
             {
-                app.UseDeveloperExceptionPage();
-            }
+                new Claim(ClaimTypes.Role, _sqrlAdminUserIds.Contains(userId) ? "SqrlAdminRole" : "SqrlUserRole")
+            };
+            var appIdentity = new ClaimsIdentity(claims);
 
-            app.UseAuthentication();
-
-            app.UseMvc();
+            context.Principal.AddIdentity(appIdentity);
+            return Task.CompletedTask;
         }
+
     }
 }
