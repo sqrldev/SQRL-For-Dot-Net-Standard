@@ -47,6 +47,14 @@ app.UseAuthentication();
 
 You will probably of noticed that the AddSqrl has options these are explained in the wiki.
 
+## Road map
+| Version | Goals | Status |
+| ------- | ----- | ------ |
+| 0.1.0   | Simple login | Released |
+| 0.5.0   | lock/unlock/remove SQRL users | Released |
+| 0.8.0   | Custom login pages override middleware | Development |
+| 0.9.0   | Examples of NUT storage and management | Not started |
+
 ## WIP
 This package is a work in progress but is working for a simple login and out the SQRL protocal requires some exstra stuff to be done to be fully compleate but this will not take long.
 
