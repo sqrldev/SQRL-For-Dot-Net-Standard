@@ -71,7 +71,7 @@ namespace SqrlForNet
             {
                 return CheckCpsRequest();
             }
-            else if (Request.Query.ContainsKey("diag"))
+            else if (Request.Query.ContainsKey("diag") && Options.Diagnostics)
             {
                 return DiagnosticsPage();
             }

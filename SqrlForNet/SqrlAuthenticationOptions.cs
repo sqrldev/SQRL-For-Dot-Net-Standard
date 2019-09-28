@@ -19,7 +19,9 @@ namespace SqrlForNet
         public string NameForAnonymous { get; set; }
 
         public string CancelledPath { get; set; }
-
+        
+        public bool Diagnostics { get; set; }
+        
         /// <summary>
         /// This is the function that is called with the UserId so that the app can look up the user
         /// </summary>
@@ -152,6 +154,7 @@ namespace SqrlForNet
             NutExpiresInSeconds = 60;
             CheckMillieSeconds = 1000;
             NameForAnonymous = "SQRL anonymous user";
+            Diagnostics = false;
 
             EncryptionKey = new byte[56];
             RandomNumberGenerator.Create().GetBytes(EncryptionKey);
@@ -228,9 +231,9 @@ namespace SqrlForNet
 
         }
 
-        public static readonly List<DiagnosticsInfo> TransactionLog = new List<DiagnosticsInfo>();
-        
-        public class DiagnosticsInfo
+        protected internal static readonly List<DiagnosticsInfo> TransactionLog = new List<DiagnosticsInfo>();
+
+        protected internal class DiagnosticsInfo
         {
 
             public string RequestUrl;
