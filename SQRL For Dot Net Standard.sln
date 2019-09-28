@@ -5,9 +5,11 @@ VisualStudioVersion = 16.0.29306.81
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SqrlForNet", "SqrlForNet\SqrlForNet.csproj", "{D8AE1B61-9967-49A8-8543-0E5CBD929702}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Examples", "Examples", "{A6A7D74B-A74B-4715-BDAB-E916B9293113}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "InMemory", "Examples\InMemory\InMemory.csproj", "{54492F00-E135-45B0-8818-4A23A68DF9B2}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "InMemory", "InMemory\InMemory.csproj", "{54492F00-E135-45B0-8818-4A23A68DF9B2}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Examples", "Examples", "{70FA3413-2862-425B-B8A2-D5E1E68822D7}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "InMemory", "Examples\InMemory\", "{428716B3-7DFF-4E54-96FC-3EE32E143488}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -28,7 +30,8 @@ Global
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
-		{54492F00-E135-45B0-8818-4A23A68DF9B2} = {A6A7D74B-A74B-4715-BDAB-E916B9293113}
+		{428716B3-7DFF-4E54-96FC-3EE32E143488} = {70FA3413-2862-425B-B8A2-D5E1E68822D7}
+		{54492F00-E135-45B0-8818-4A23A68DF9B2} = {428716B3-7DFF-4E54-96FC-3EE32E143488}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {AF7F16DE-C09B-4D43-83B7-9D081DD293A1}
