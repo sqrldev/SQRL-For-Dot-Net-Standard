@@ -75,7 +75,11 @@ namespace SqrlForNet
             {
                 return DiagnosticsPage();
             }
-            else //For everything else we should only return a login page
+            else if (Request.Query.ContainsKey("Helper"))
+            {
+                CommandWorker.HelperHtml();
+            }
+            else if (!Options.DisableDefaultLoginPage) //For everything else we should only return a login page
             {
                 CommandWorker.QrCodePage();
             }

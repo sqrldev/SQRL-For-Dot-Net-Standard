@@ -522,12 +522,34 @@ namespace SqrlForNet
             responseMessage.AppendLine("<img src=\"data:image/bmp;base64," + GetBase64QrCode(url) + "\">");
             responseMessage.AppendLine($"<a href=\"{url}&can={cancelUrl}\">Sign in with SQRL</a>");
             responseMessage.AppendLine($"<a href=\"{checkUrl}\">Check manually your login here</a>");
+            responseMessage.AppendLine($"<noscript>You will have to use the check manually link as scripting is turned off</noscript>");
             responseMessage.AppendLine($"<a href=\"{diagUrl}\">Diagnostics</a>");
             responseMessage.AppendLine("</body>");
             responseMessage.AppendLine("</html>");
             return responseMessage.ToString();
         }
 
+        public void HelperHtml()
+        {
+            var nut = GenerateNut(Options.EncryptionKey);
+            StoreNut(nut);
+            var url = $"sqrl://{Request.Host}{Options.CallbackPath}?nut=" + nut;
+            var checkUrl = $"{Request.Scheme}://{Request.Host}{Options.CallbackPath}?check=" + nut;
+            var cancelUrl = Base64UrlTextEncoder.Encode(Encoding.ASCII.GetBytes($"{Request.Scheme}://{Request.Host}{Options.CancelledPath}"));
+            var responseMessage = new StringBuilder();
+            responseMessage.Append("{");
+            responseMessage.Append("url:" + url + ",");
+            responseMessage.Append("checkUrl:" + checkUrl + ",");
+            responseMessage.Append("cancelUrl:" + cancelUrl + ",");
+            responseMessage.Append("qrCodeBase64:" + GetBase64QrCode(url));
+            responseMessage.Append("}");
+            var responseMessageBytes = Encoding.ASCII.GetBytes(responseMessage.ToString());
+            Response.StatusCode = StatusCodes.Status200OK;
+            Response.ContentType = "application/json";
+            Response.ContentLength = responseMessageBytes.LongLength;
+            Response.Body.Write(responseMessageBytes, 0, responseMessageBytes.Length);
+        }
+        
         private string GetBase64QrCode(string url)
         {
             var qrCode = QrCode.EncodeText(url, QrCode.Ecc.High);
