@@ -240,7 +240,7 @@ namespace SqrlForNet
 
         }
         
-        public static void LogTransaction(HttpRequest request, HttpResponse response)
+        public static void LogTransaction(HttpRequest request, string response)
         {
             var info = new DiagnosticsInfo()
             {
@@ -269,6 +269,18 @@ namespace SqrlForNet
                     info.Body.Add(form.Key + ": " + form.Value);
                 }
             }
+            
+            var responseValues = response
+                .Replace("\r\n", "\n")
+                .Split('\n')
+                .Where(x => x.Contains("="))
+                .ToDictionary(x => x.Split('=')[0], x => x.Split('=')[1]);
+
+            foreach (var responseValue in responseValues)
+            {
+                info.ResponseBody.Add(responseValue.Key + ": " + responseValue.Value);
+            }
+            
             TransactionLog.Add(info);
         }
 

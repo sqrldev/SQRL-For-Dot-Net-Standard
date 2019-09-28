@@ -80,7 +80,6 @@ namespace SqrlForNet
                 CommandWorker.QrCodePage();
             }
             
-            SqrlAuthenticationOptions.LogTransaction(Request,Response);
             return Task.FromResult(HandleRequestResult.Handle());
         }
 
@@ -141,6 +140,11 @@ namespace SqrlForNet
                 responseMessage.AppendLine("<div>");
                 responseMessage.AppendLine("<h2>" + log.RequestUrl + "</h2>");
                 foreach (var body in log.Body)
+                {
+                    responseMessage.AppendLine("<p>" + body + "</p>");
+                }
+                responseMessage.AppendLine("<h2>Responded with</h2>");
+                foreach (var body in log.ResponseBody)
                 {
                     responseMessage.AppendLine("<p>" + body + "</p>");
                 }
