@@ -39,6 +39,7 @@ namespace InMemory
                     options.GetUserVuk = GetUserVuk;
                     options.GetUserSuk = GetUserSuk;
                     options.Events.OnTicketReceived += OnTicketReceived;
+                    options.Diagnostics = true;
                 });
             services.AddMvc();
         }

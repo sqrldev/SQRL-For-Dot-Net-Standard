@@ -263,7 +263,7 @@ namespace SqrlForNet
                             .Replace("\r\n", "\n")
                             .Split('\n')
                             .Where(x => x.Contains("="))
-                            .ToDictionary(x => x.Split('=')[0], x => x.Split('=')[1]);
+                            .ToDictionary(x => x.Split('=')[0], x => x.Remove(0,x.Split('=')[0].Length + 1));
                         
                         foreach (var param in clientParams)
                         {
@@ -279,7 +279,7 @@ namespace SqrlForNet
                 .Replace("\r\n", "\n")
                 .Split('\n')
                 .Where(x => x.Contains("="))
-                .ToDictionary(x => x.Split('=')[0], x => x.Split('=')[1]);
+                .ToDictionary(x => x.Split('=')[0], x => x.Remove(0,x.Split('=')[0].Length + 1));
 
             foreach (var responseValue in responseValues)
             {

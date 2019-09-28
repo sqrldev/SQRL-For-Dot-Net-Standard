@@ -12,7 +12,8 @@
     <PackageProjectUrl>https://github.com/TechLiam/SQRL-For-Dot-Net-Standard</PackageProjectUrl>
     <RepositoryUrl>https://github.com/TechLiam/SQRL-For-Dot-Net-Standard</RepositoryUrl>
     <PackageTags>SQRL, Authentication, ASP.net, ASP.net core</PackageTags>
-    <PackageReleaseNotes>0.5.3 - Added response to diagnostics page
+    <PackageReleaseNotes>0.6.0 - Diagnostic pages now ready to use and work started on custom login pages
+0.5.3 - Added response to diagnostics page
 0.5.2 - Added a simple diagnostics page to help with diagnosing issues
 0.5.1 - Fix for missing validation on RemoveUser Action
 0.5.0 - Beta release added support for Enable, Disable and Remove
@@ -21,7 +22,7 @@
     <RepositoryType>GitHub</RepositoryType>
     <SignAssembly>false</SignAssembly>
     <PackageIconUrl>https://www.grc.com/sqrl/SQRL_Logo_80x80.png</PackageIconUrl>
-    <PackageVersion>0.5.3</PackageVersion>
+    <PackageVersion>0.6.0</PackageVersion>
     <Title>SqrlForNet</Title>
   </PropertyGroup>
 

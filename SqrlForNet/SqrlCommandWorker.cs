@@ -153,7 +153,7 @@ namespace SqrlForNet
                     .Replace("\r\n", "\n")
                     .Split('\n')
                     .Where(x => x.Contains("="))
-                    .ToDictionary(x => x.Split('=')[0], x => x.Split('=')[1]);
+                    .ToDictionary(x => x.Split('=')[0], x => x.Remove(0,x.Split('=')[0].Length + 1));
             }
             return _clientParamsCache;
         }
@@ -523,7 +523,10 @@ namespace SqrlForNet
             responseMessage.AppendLine($"<a href=\"{url}&can={cancelUrl}\">Sign in with SQRL</a>");
             responseMessage.AppendLine($"<a href=\"{checkUrl}\">Check manually your login here</a>");
             responseMessage.AppendLine($"<noscript>You will have to use the check manually link as scripting is turned off</noscript>");
-            responseMessage.AppendLine($"<a href=\"{diagUrl}\">Diagnostics</a>");
+            if (Options.Diagnostics)
+            {
+                responseMessage.AppendLine($"<a href=\"{diagUrl}\">Diagnostics</a>");
+            }
             responseMessage.AppendLine("</body>");
             responseMessage.AppendLine("</html>");
             return responseMessage.ToString();
@@ -590,7 +593,7 @@ namespace SqrlForNet
 
             if (includeCpsUrl)
             {
-                responseMessageBuilder.AppendLine("url=/login-sqrl?cps=" + GenerateCpsCode());
+                responseMessageBuilder.AppendLine("url=" + Request.Scheme + "://" + Request.Host + "/login-sqrl?cps=" + GenerateCpsCode());
             }
 
             if ((tifValue.HasFlag(Tif.IdMatch) || tifValue.HasFlag(Tif.PreviousIdMatch) || tifValue.HasFlag(Tif.SqrlDisabled)))
