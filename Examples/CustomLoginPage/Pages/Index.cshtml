@@ -1,0 +1,14 @@
+﻿@page
+@model CustomLoginPage.Pages.IndexModel
+<h1>Custom login page demo</h1>
+@if (!User.Identity.IsAuthenticated)
+{
+    <p>You will see a SQRL login QR code here and a link to start the login</p>
+}
+else
+{
+    <p>You are now logged in as @User.Identity.Name</p>
+    <form method="get" action="/logout">
+        <button type="submit">Logout</button>
+    </form>
+}
