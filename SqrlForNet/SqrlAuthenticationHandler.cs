@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Security.Claims;
+using System.Text;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
@@ -70,10 +71,16 @@ namespace SqrlForNet
             {
                 return CheckCpsRequest();
             }
+            else if (Request.Query.ContainsKey("diag"))
+            {
+                return DiagnosticsPage();
+            }
             else //For everything else we should only return a login page
             {
                 CommandWorker.QrCodePage();
             }
+            
+            SqrlAuthenticationOptions.LogTransaction(Request,Response);
             return Task.FromResult(HandleRequestResult.Handle());
         }
 
@@ -124,5 +131,30 @@ namespace SqrlForNet
             return Task.FromResult(HandleRequestResult.Handle());
         }
 
+        private Task<HandleRequestResult> DiagnosticsPage()
+        {
+            var responseMessage = new StringBuilder();
+            responseMessage.AppendLine("<h1>Diagnostics</h1>");
+
+            foreach (var log in SqrlAuthenticationOptions.TransactionLog)
+            {
+                responseMessage.AppendLine("<div>");
+                responseMessage.AppendLine("<h2>" + log.RequestUrl + "</h2>");
+                foreach (var body in log.Body)
+                {
+                    responseMessage.AppendLine("<p>" + body + "</p>");
+                }
+                responseMessage.AppendLine("</div>");
+                responseMessage.AppendLine("<hr/>");
+            }
+            
+            var responseMessageBytes = Encoding.ASCII.GetBytes(responseMessage.ToString());
+            Response.StatusCode = StatusCodes.Status200OK;
+            Response.ContentType = "text/html";
+            Response.ContentLength = responseMessageBytes.LongLength;
+            Response.Body.Write(responseMessageBytes, 0, responseMessageBytes.Length);
+            return Task.FromResult(HandleRequestResult.Handle());
+        }
+        
     }
 }

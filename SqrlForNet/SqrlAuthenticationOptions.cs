@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Cryptography;
+using System.Text;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Http;
 
@@ -226,5 +227,50 @@ namespace SqrlForNet
             }
 
         }
+
+        public static readonly List<DiagnosticsInfo> TransactionLog = new List<DiagnosticsInfo>();
+        
+        public class DiagnosticsInfo
+        {
+
+            public string RequestUrl;
+            public List<string> Body;
+
+            public List<string> ResponseBody;
+
+        }
+        
+        public static void LogTransaction(HttpRequest request, HttpResponse response)
+        {
+            var info = new DiagnosticsInfo()
+            {
+                RequestUrl = "[" + request.Method + "]" + request.Host + request.Path + request.QueryString,
+                Body = new List<string>(),
+                ResponseBody = new List<string>()
+            };
+            if (request.HasFormContentType)
+            {
+                foreach (var form in request.Form)
+                {
+                    if (form.Key == "client" || form.Key == "server")
+                    {
+                        var clientParams = Encoding.ASCII.GetString(Base64UrlTextEncoder.Decode(form.Value))
+                            .Replace("\r\n", "\n")
+                            .Split('\n')
+                            .Where(x => x.Contains("="))
+                            .ToDictionary(x => x.Split('=')[0], x => x.Split('=')[1]);
+                        
+                        foreach (var param in clientParams)
+                        {
+                            info.Body.Add(form.Key + "." + param.Key + ": " + param.Value);
+                        }
+                        continue;
+                    }
+                    info.Body.Add(form.Key + ": " + form.Value);
+                }
+            }
+            TransactionLog.Add(info);
+        }
+
     }
 }

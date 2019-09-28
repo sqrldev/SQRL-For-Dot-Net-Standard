@@ -487,15 +487,16 @@ namespace SqrlForNet
             StoreNut(nut);
             var url = $"sqrl://{Request.Host}{Options.CallbackPath}?nut=" + nut;
             var checkUrl = $"{Request.Scheme}://{Request.Host}{Options.CallbackPath}?check=" + nut;
+            var diagUrl = $"{Request.Scheme}://{Request.Host}{Options.CallbackPath}?diag";
             var cancelUrl = Base64UrlTextEncoder.Encode(Encoding.ASCII.GetBytes($"{Request.Scheme}://{Request.Host}{Options.CancelledPath}"));
-            var responseMessageBytes = Encoding.ASCII.GetBytes(QrCodePageHtml(url, checkUrl, cancelUrl));
+            var responseMessageBytes = Encoding.ASCII.GetBytes(QrCodePageHtml(url, checkUrl, cancelUrl, diagUrl));
             Response.StatusCode = StatusCodes.Status200OK;
             Response.ContentType = "text/html";
             Response.ContentLength = responseMessageBytes.LongLength;
             Response.Body.Write(responseMessageBytes, 0, responseMessageBytes.Length);
         }
 
-        private string QrCodePageHtml(string url, string checkUrl, string cancelUrl)
+        private string QrCodePageHtml(string url, string checkUrl, string cancelUrl, string diagUrl)
         {
             var responseMessage = new StringBuilder();
             responseMessage.AppendLine("<!DOCTYPE html>");
@@ -521,6 +522,7 @@ namespace SqrlForNet
             responseMessage.AppendLine("<img src=\"data:image/bmp;base64," + GetBase64QrCode(url) + "\">");
             responseMessage.AppendLine($"<a href=\"{url}&can={cancelUrl}\">Sign in with SQRL</a>");
             responseMessage.AppendLine($"<a href=\"{checkUrl}\">Check manually your login here</a>");
+            responseMessage.AppendLine($"<a href=\"{diagUrl}\">Diagnostics</a>");
             responseMessage.AppendLine("</body>");
             responseMessage.AppendLine("</html>");
             return responseMessage.ToString();
