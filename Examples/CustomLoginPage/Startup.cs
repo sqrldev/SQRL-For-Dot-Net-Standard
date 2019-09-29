@@ -42,6 +42,7 @@ namespace CustomLoginPage
                     options.Diagnostics = true;
                     options.DisableDefaultLoginPage = true;
                 });
+            
             services.AddMvc();
         }
         
@@ -53,7 +54,7 @@ namespace CustomLoginPage
             }
 
             app.UseAuthentication();
-
+            
             app.UseMvc();
         }
 

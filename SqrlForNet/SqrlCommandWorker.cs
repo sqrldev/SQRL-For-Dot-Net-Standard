@@ -532,7 +532,7 @@ namespace SqrlForNet
             return responseMessage.ToString();
         }
 
-        public void HelperHtml()
+        public void HelperJson()
         {
             var nut = GenerateNut(Options.EncryptionKey);
             StoreNut(nut);
@@ -541,10 +541,10 @@ namespace SqrlForNet
             var cancelUrl = Base64UrlTextEncoder.Encode(Encoding.ASCII.GetBytes($"{Request.Scheme}://{Request.Host}{Options.CancelledPath}"));
             var responseMessage = new StringBuilder();
             responseMessage.Append("{");
-            responseMessage.Append("url:" + url + ",");
-            responseMessage.Append("checkUrl:" + checkUrl + ",");
-            responseMessage.Append("cancelUrl:" + cancelUrl + ",");
-            responseMessage.Append("qrCodeBase64:" + GetBase64QrCode(url));
+            responseMessage.Append("\"url\":\"" + url + "\",");
+            responseMessage.Append("\"checkUrl\":\"" + checkUrl + "\",");
+            responseMessage.Append("\"cancelUrl\":\"" + cancelUrl + "\",");
+            responseMessage.Append("\"qrCodeBase64\":\"" + GetBase64QrCode(url) + "\"");
             responseMessage.Append("}");
             var responseMessageBytes = Encoding.ASCII.GetBytes(responseMessage.ToString());
             Response.StatusCode = StatusCodes.Status200OK;
@@ -555,14 +555,18 @@ namespace SqrlForNet
         
         private string GetBase64QrCode(string url)
         {
+            return Convert.ToBase64String(GetBase64QrCodeData(url));
+        }
+
+        private byte[] GetBase64QrCodeData(string url)
+        {
             var qrCode = QrCode.EncodeText(url, QrCode.Ecc.High);
             var img = qrCode.ToBitmap(3, 1);
             MemoryStream stream = new MemoryStream();
             img.Save(stream, ImageFormat.Bmp);
-            byte[] imageBytes = stream.ToArray();
-            return Convert.ToBase64String(imageBytes);
+            return stream.ToArray();
         }
-
+        
         public bool CheckPage()
         {
             var checkNut = Request.Query["check"];
