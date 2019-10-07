@@ -38,6 +38,9 @@ services.AddAuthentication()
     options.UpdateUserId = UpdateUserId;
     options.GetUserVuk = GetUserVuk;
     options.UnlockUser = UnlockUser;
+    options.LockUser = LockUser;
+    options.GetUserSuk = GetUserSuk;
+    options.RemoveUser = RemoveUser;
   });
 ```
 You will also need to make sure you have this in the Configure method
@@ -54,10 +57,5 @@ You will probably of noticed that the AddSqrl has options these are explained in
 | 0.5.0   | lock/unlock/remove SQRL users | Released |
 | 0.6.0   | Diagnostics page for debugging | Released |
 | 0.8.0   | Custom login pages override middleware | Released |
-| 0.9.0   | Examples of NUT storage and management | Not started |
-
-## WIP
-This package is a work in progress but is working for a simple login and out the SQRL protocal requires some exstra stuff to be done to be fully compleate but this will not take long.
-
-## Warning
-It is the publishers belief that this code is secure and crypto correct but I am awaiting confirmation on this.
+| 0.9.0   | Examples of NUT storage and management | Developing |
+| 1.0.0   | Add options for SqrlOnly and Hardlock | Developing |
