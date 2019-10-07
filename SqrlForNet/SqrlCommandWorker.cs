@@ -608,6 +608,7 @@ namespace SqrlForNet
             }
 
             var responseMessageBytes = Encoding.ASCII.GetBytes(Base64UrlTextEncoder.Encode(Encoding.ASCII.GetBytes(responseMessageBuilder.ToString())));
+            Response.ContentType = "application/x-www-form-urlencoded";
             Response.StatusCode = StatusCodes.Status200OK;
             Response.ContentLength = responseMessageBytes.LongLength;
             Response.Body.Write(responseMessageBytes, 0, responseMessageBytes.Length);

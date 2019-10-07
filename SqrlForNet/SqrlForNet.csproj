@@ -4,7 +4,7 @@
     <TargetFramework>netstandard2.0</TargetFramework>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
-    <Version>0.5.1</Version>
+    <Version>0.8.1</Version>
     <Authors>Liam Raper</Authors>
     <Description>SQRL for the .Net Standard runtimes. Secure Quick Reliable Login is a highly secure user privacy based authentication system that removes the need for users to have more than one password for a global identity https://www.grc.com/sqrl/sqrl.htm for more information of the protocal.</Description>
     <Copyright>Liam Raper 2019</Copyright>
@@ -12,7 +12,8 @@
     <PackageProjectUrl>https://github.com/TechLiam/SQRL-For-Dot-Net-Standard</PackageProjectUrl>
     <RepositoryUrl>https://github.com/TechLiam/SQRL-For-Dot-Net-Standard</RepositoryUrl>
     <PackageTags>SQRL, Authentication, ASP.net, ASP.net core</PackageTags>
-    <PackageReleaseNotes>0.8.0 - Custom login pages now allow you to create your own styled login page
+    <PackageReleaseNotes>0.8.1 - Fixed bug found by DEllner with iOS app expecting content type of application/x-www-form-urlencoded this is now sent
+0.8.0 - Custom login pages now allow you to create your own styled login page
 0.6.0 - Diagnostic pages now ready to use and work started on custom login pages
 0.5.3 - Added response to diagnostics page
 0.5.2 - Added a simple diagnostics page to help with diagnosing issues
