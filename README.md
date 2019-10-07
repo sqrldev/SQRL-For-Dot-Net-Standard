@@ -38,6 +38,9 @@ services.AddAuthentication()
     options.UpdateUserId = UpdateUserId;
     options.GetUserVuk = GetUserVuk;
     options.UnlockUser = UnlockUser;
+    options.LockUser = LockUser;
+    options.GetUserSuk = GetUserSuk;
+    options.RemoveUser = RemoveUser;
   });
 ```
 You will also need to make sure you have this in the Configure method
