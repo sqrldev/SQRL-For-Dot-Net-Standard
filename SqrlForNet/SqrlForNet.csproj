@@ -23,8 +23,8 @@
     <NeutralLanguage>en-GB</NeutralLanguage>
     <RepositoryType>GitHub</RepositoryType>
     <SignAssembly>false</SignAssembly>
-    <PackageIconUrl>https://www.grc.com/sqrl/SQRL_Logo_80x80.png</PackageIconUrl>
-    <PackageVersion>0.8.0</PackageVersion>
+    <PackageIcon>sqrllogo.png</PackageIcon>
+    <PackageVersion>0.8.1</PackageVersion>
     <Title>SqrlForNet</Title>
   </PropertyGroup>
 
@@ -43,6 +43,10 @@
 
   <ItemGroup>
     <Folder Include="Chaos.NaCl\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="sqrllogo.png"  Pack="true" PackagePath="\"/>
   </ItemGroup>
 
 </Project>
