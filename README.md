@@ -56,9 +56,3 @@ You will probably of noticed that the AddSqrl has options these are explained in
 | 0.8.0   | Custom login pages override middleware | Released |
 | 0.9.0   | Examples of NUT storage and management | Developing |
 | 1.0.0   | Add options for SqrlOnly and Hardlock | Developing |
-
-## WIP
-This package is a work in progress but is working for a simple login and out the SQRL protocal requires some exstra stuff to be done to be fully compleate but this will not take long.
-
-## Warning
-It is the publishers belief that this code is secure and crypto correct but I am awaiting confirmation on this.
