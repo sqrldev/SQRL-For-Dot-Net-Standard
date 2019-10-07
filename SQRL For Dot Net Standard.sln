@@ -5,11 +5,13 @@ VisualStudioVersion = 16.0.29306.81
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SqrlForNet", "SqrlForNet\SqrlForNet.csproj", "{D8AE1B61-9967-49A8-8543-0E5CBD929702}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "InMemory", "Examples\InMemory\InMemory.csproj", "{54492F00-E135-45B0-8818-4A23A68DF9B2}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "InMemory", "Examples\InMemory\InMemory.csproj", "{54492F00-E135-45B0-8818-4A23A68DF9B2}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Examples", "Examples", "{70FA3413-2862-425B-B8A2-D5E1E68822D7}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CustomLoginPage", "Examples\CustomLoginPage\CustomLoginPage.csproj", "{796C5BA2-2887-4407-B50A-3F43ED2E6D69}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CustomLoginPage", "Examples\CustomLoginPage\CustomLoginPage.csproj", "{796C5BA2-2887-4407-B50A-3F43ED2E6D69}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "StoringNuts", "Examples\StoringNuts\StoringNuts.csproj", "{28646752-6AEE-4455-90B4-9F21D1D70CF6}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -29,13 +31,18 @@ Global
 		{796C5BA2-2887-4407-B50A-3F43ED2E6D69}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{796C5BA2-2887-4407-B50A-3F43ED2E6D69}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{796C5BA2-2887-4407-B50A-3F43ED2E6D69}.Release|Any CPU.Build.0 = Release|Any CPU
+		{28646752-6AEE-4455-90B4-9F21D1D70CF6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{28646752-6AEE-4455-90B4-9F21D1D70CF6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{28646752-6AEE-4455-90B4-9F21D1D70CF6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{28646752-6AEE-4455-90B4-9F21D1D70CF6}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
-		{796C5BA2-2887-4407-B50A-3F43ED2E6D69} = {70FA3413-2862-425B-B8A2-D5E1E68822D7}
 		{54492F00-E135-45B0-8818-4A23A68DF9B2} = {70FA3413-2862-425B-B8A2-D5E1E68822D7}
+		{796C5BA2-2887-4407-B50A-3F43ED2E6D69} = {70FA3413-2862-425B-B8A2-D5E1E68822D7}
+		{28646752-6AEE-4455-90B4-9F21D1D70CF6} = {70FA3413-2862-425B-B8A2-D5E1E68822D7}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {AF7F16DE-C09B-4D43-83B7-9D081DD293A1}
