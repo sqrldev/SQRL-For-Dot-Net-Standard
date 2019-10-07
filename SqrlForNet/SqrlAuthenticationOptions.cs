@@ -185,6 +185,7 @@ namespace SqrlForNet
             {
                 throw new ArgumentException($"{nameof(EncryptionKey)} must be set with some bytes or don't override it and secure random bytes are generated.");
             }
+
             if (NutExpiresInSeconds < 1)
             {
                 throw new ArgumentException($"{nameof(NutExpiresInSeconds)} must be grater than 0 so that a SQRL client can have a chance to communicate, we suggest a value of 60");
@@ -225,9 +226,9 @@ namespace SqrlForNet
                 throw new ArgumentException($"{nameof(LockUser)} should be set");
             }
 
-            if (GetUserVuk == null)
+            if (GetUserSuk == null)
             {
-                throw new ArgumentException($"{nameof(GetUserVuk)} should be set");
+                throw new ArgumentException($"{nameof(GetUserSuk)} should be set");
             }
 
             if (RemoveUser == null)
