@@ -607,6 +607,13 @@ namespace SqrlForNet
                 responseMessageBuilder.AppendLine("suk=" + Base64UrlTextEncoder.Encode(Encoding.ASCII.GetBytes(suk)));
             }
 
+            if (!(tifValue.HasFlag(Tif.TransientError) || tifValue.HasFlag(Tif.BadId) ||
+                tifValue.HasFlag(Tif.ClientFailed) || tifValue.HasFlag(Tif.CommandFailed) ||
+                tifValue.HasFlag(Tif.FunctionNotSupported)) && GetCommand() != Command.Query)
+            {
+                NoneQueryOptionHandling();
+            }
+
             var responseMessageBytes = Encoding.ASCII.GetBytes(Base64UrlTextEncoder.Encode(Encoding.ASCII.GetBytes(responseMessageBuilder.ToString())));
             Response.ContentType = "application/x-www-form-urlencoded";
             Response.StatusCode = StatusCodes.Status200OK;
@@ -713,6 +720,18 @@ namespace SqrlForNet
             var code = Guid.NewGuid().ToString("N");
             Options.StoreCpsSessionId.Invoke(code, GetClientParams()["idk"]);
             return code;
+        }
+
+        private void NoneQueryOptionHandling()
+        {
+            if (GetClientParams().ContainsKey("opt") && ParseOpts()[OptKey.sqrlonly] && Options.SqrlOnlyReceived != null)
+            {
+                Options.SqrlOnlyReceived.Invoke(GetClientParams()["idk"]);
+            }
+            if (GetClientParams().ContainsKey("opt") && ParseOpts()[OptKey.hardlock] && Options.HardlockReceived != null)
+            {
+                Options.HardlockReceived.Invoke(GetClientParams()["idk"]);
+            }
         }
 
     }

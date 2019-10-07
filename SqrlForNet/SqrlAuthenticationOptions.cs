@@ -79,6 +79,10 @@ namespace SqrlForNet
 
         public Action<string> RemoveCpsSessionId;
 
+        public Action<string> SqrlOnlyReceived;
+
+        public Action<string> HardlockReceived;
+
         /// <summary>
         /// Used to store the nuts
         /// </summary>
