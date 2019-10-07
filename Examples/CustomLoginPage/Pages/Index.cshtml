@@ -16,7 +16,19 @@ else
 }
 <script>
     document.onload += RenderLoginPage();
-
+    
+    function CspProcess(e){
+        var gifProbe = new Image();
+        gifProbe.onload = function() {  // define our load-success function
+            alert(atob(e.getAttribute("sqrl-href")))
+            document.location.href = "http://localhost:25519/"+ e.getAttribute("sqrl-href");
+        };
+        gifProbe.onerror = function() { // define our load-failure function
+        	setTimeout( function(){ gifProbe.src = "http://localhost:25519/" + Date.now() + '.gif';	}, 250 );
+        };
+        gifProbe.onerror();
+    }
+    
     function RenderLoginPage() {
         var xhttp = new XMLHttpRequest();
         xhttp.onreadystatechange = function()
@@ -27,7 +39,9 @@ else
                 var sqrlDiv = document.getElementById("customSqrlSection");
 
                 var loginLink = document.createElement("a");
+                loginLink.setAttribute("sqrl-href", btoa(data["url"]));
                 loginLink.setAttribute("href", data["url"]+"&can="+data["cancelUrl"]);
+                loginLink.setAttribute("onclick", "CspProcess(this);");
                 loginLink.innerText = "SQRL Login";
 
                 var qrCodeImage = document.createElement("img");
