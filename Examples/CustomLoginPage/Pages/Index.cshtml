@@ -16,46 +16,34 @@ else
 }
 <script>
     document.onload += RenderLoginPage();
-    function onLoad() {
-        var xhttp = new XMLHttpRequest();
-        xhttp.onreadystatechange = function() 
-        {
-            if (this.readyState == 4 && this.status == 200)
-            {
-                RenderLoginPage();
-            }
-        };
-        xhttp.open("GET", "http://localhost:25519/" + Date.now() + ".gif ", true);
-        xhttp.send();
-    }
-    
+
     function RenderLoginPage() {
         var xhttp = new XMLHttpRequest();
-        xhttp.onreadystatechange = function() 
+        xhttp.onreadystatechange = function()
         {
             if (this.readyState == 4 && this.status == 200)
             {
                 var data = JSON.parse(this.responseText);
                 var sqrlDiv = document.getElementById("customSqrlSection");
-                
+
                 var loginLink = document.createElement("a");
                 loginLink.setAttribute("href", data["url"]+"&can="+data["cancelUrl"]);
                 loginLink.innerText = "SQRL Login";
-                
+
                 var qrCodeImage = document.createElement("img");
                 qrCodeImage.setAttribute("src", "data:image/bmp;base64," + data["qrCodeBase64"]);
-                
+
                 sqrlDiv.appendChild(loginLink);
                 sqrlDiv.appendChild(qrCodeImage);
-                
+
                 setInterval(function(){ CheckAuto(data["checkUrl"]); }, 1000);
-                
+
             }
         };
         xhttp.open("GET", "https://@Request.Host/login-sqrl?Helper", true);
         xhttp.send();
     }
-    
+
     function CheckAuto(checkUrl) {
             var xhttp = new XMLHttpRequest();
             xhttp.onreadystatechange = function() {{
@@ -66,7 +54,7 @@ else
             }
             }};
             xhttp.open("GET", checkUrl, true);
-            xhttp.send();    
+            xhttp.send();
         }
-    
+
 </script>
