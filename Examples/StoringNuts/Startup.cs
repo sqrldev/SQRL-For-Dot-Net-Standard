@@ -49,6 +49,10 @@ namespace StoringNuts
                     options.GetNutIdk = GetNutIdk;
                     options.CheckNutAuthorized = CheckNutAuthorized;
 
+                    options.StoreCpsSessionId = StoreCpsSessionId;
+                    options.GetUserIdByCpsSessionId = GetUserIdByCpsSessionId;
+                    options.RemoveCpsSessionId = RemoveCpsSessionId;
+
                 });
 
             services.AddMvc();
@@ -196,6 +200,25 @@ namespace StoringNuts
         {
             return AuthorizedNutList.Single(x => x.Key == nut || x.Value.FirstNut == nut).Value.Idk;
         }
+
+
+        private static readonly Dictionary<string, string> CpsSessions = new Dictionary<string, string>();
+
+        private void StoreCpsSessionId(string sessionId, string userId)
+        {
+            CpsSessions.Add(sessionId, userId);
+        }
+
+        private string GetUserIdByCpsSessionId(string sessionId)
+        {
+            return CpsSessions.ContainsKey(sessionId) ? CpsSessions[sessionId] : null;
+        }
+
+        private void RemoveCpsSessionId(string sessionId)
+        {
+            CpsSessions.Remove(sessionId);
+        }
+
 
     }
 }
