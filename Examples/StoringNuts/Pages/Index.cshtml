@@ -21,10 +21,10 @@ else
     function CspProcess(e){
         var gifProbe = new Image();
         gifProbe.onload = function() {
-            document.location.href = "https://localhost:25519/"+ e.getAttribute("sqrl-href");
+            document.location.href = "http://localhost:25519/"+ e.getAttribute("sqrl-href");
         };
         gifProbe.onerror = function() {
-        	setTimeout( function(){ gifProbe.src = "https://localhost:25519/" + Date.now() + '.gif';	}, 250 );
+        	setTimeout( function(){ gifProbe.src = "http://localhost:25519/" + Date.now() + '.gif';	}, 250 );
         };
         gifProbe.onerror();
     }
