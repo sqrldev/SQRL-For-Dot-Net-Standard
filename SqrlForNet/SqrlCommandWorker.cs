@@ -503,6 +503,16 @@ namespace SqrlForNet
             responseMessage.AppendLine("<html lang=\"en-gb\">");
             responseMessage.AppendLine("<head>");
             responseMessage.AppendLine("<script>");
+            responseMessage.AppendLine("function CpsProcess(e) {");
+            responseMessage.AppendLine($@"var gifProbe = new Image();
+                                            gifProbe.onload = function() {{
+                                                document.location.href = ""http://localhost:25519/""+ btoa(e.getAttribute(""href""));
+                                            }};
+                                            gifProbe.onerror = function() {{
+        	                                    setTimeout( function(){{ gifProbe.src = ""http://localhost:25519/"" + Date.now() + '.gif';	}}, 250 );
+                                            }};
+                                            gifProbe.onerror();");
+            responseMessage.AppendLine("}");
             responseMessage.AppendLine("function CheckAuto() {");
             responseMessage.AppendLine($@"var xhttp = new XMLHttpRequest();
                                           xhttp.onreadystatechange = function() {{
@@ -520,7 +530,7 @@ namespace SqrlForNet
             responseMessage.AppendLine("<body onload=\"setInterval(function(){ CheckAuto(); }, " + Options.CheckMillieSeconds + ");\">");
             responseMessage.AppendLine("<h1>SQRL login page</h1>");
             responseMessage.AppendLine("<img src=\"data:image/bmp;base64," + GetBase64QrCode(url) + "\">");
-            responseMessage.AppendLine($"<a href=\"{url}&can={cancelUrl}\">Sign in with SQRL</a>");
+            responseMessage.AppendLine($"<a href=\"{url}&can={cancelUrl}\" onclick=\"CpsProcess(this);\">Sign in with SQRL</a>");
             responseMessage.AppendLine($"<a href=\"{checkUrl}\">Check manually your login here</a>");
             responseMessage.AppendLine($"<noscript>You will have to use the check manually link as scripting is turned off</noscript>");
             if (Options.Diagnostics)

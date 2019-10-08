@@ -18,10 +18,10 @@ else
 <script>
     document.onload += RenderLoginPage();
 
-    function CspProcess(e){
+    function CpsProcess(e){
         var gifProbe = new Image();
         gifProbe.onload = function() {
-            document.location.href = "http://localhost:25519/"+ e.getAttribute("sqrl-href");
+            document.location.href = "http://localhost:25519/"+ btoa(e.getAttribute("href"));
         };
         gifProbe.onerror = function() {
         	setTimeout( function(){ gifProbe.src = "http://localhost:25519/" + Date.now() + '.gif';	}, 250 );
@@ -37,9 +37,8 @@ else
                 var sqrlDiv = document.getElementById("customSqrlSection");
 
                 var loginLink = document.createElement("a");
-                loginLink.setAttribute("sqrl-href", btoa(data["url"]));
                 loginLink.setAttribute("href", data["url"] + "&can=" + data["cancelUrl"]);
-                loginLink.setAttribute("onclick", "CspProcess(this);");
+                loginLink.setAttribute("onclick", "CpsProcess(this);");
                 loginLink.innerText = "SQRL Login";
 
                 var qrCodeImage = document.createElement("img");
