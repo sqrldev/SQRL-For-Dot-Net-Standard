@@ -19,28 +19,25 @@ else
     
     function CspProcess(e){
         var gifProbe = new Image();
-        gifProbe.onload = function() {  // define our load-success function
-            alert(atob(e.getAttribute("sqrl-href")))
-            document.location.href = "http://localhost:25519/"+ e.getAttribute("sqrl-href");
+        gifProbe.onload = function() {
+            document.location.href = "https://localhost:25519/"+ e.getAttribute("sqrl-href");
         };
-        gifProbe.onerror = function() { // define our load-failure function
-        	setTimeout( function(){ gifProbe.src = "http://localhost:25519/" + Date.now() + '.gif';	}, 250 );
+        gifProbe.onerror = function() {
+        	setTimeout( function(){ gifProbe.src = "https://localhost:25519/" + Date.now() + '.gif';	}, 250 );
         };
         gifProbe.onerror();
     }
     
     function RenderLoginPage() {
         var xhttp = new XMLHttpRequest();
-        xhttp.onreadystatechange = function()
-        {
-            if (this.readyState == 4 && this.status == 200)
-            {
+        xhttp.onreadystatechange = function () {
+            if (this.readyState == 4 && this.status == 200) {
                 var data = JSON.parse(this.responseText);
                 var sqrlDiv = document.getElementById("customSqrlSection");
 
                 var loginLink = document.createElement("a");
                 loginLink.setAttribute("sqrl-href", btoa(data["url"]));
-                loginLink.setAttribute("href", data["url"]+"&can="+data["cancelUrl"]);
+                loginLink.setAttribute("href", data["url"] + "&can=" + data["cancelUrl"]);
                 loginLink.setAttribute("onclick", "CspProcess(this);");
                 loginLink.innerText = "SQRL Login";
 
@@ -50,11 +47,11 @@ else
                 sqrlDiv.appendChild(loginLink);
                 sqrlDiv.appendChild(qrCodeImage);
 
-                setInterval(function(){ CheckAuto(data["checkUrl"]); }, 1000);
+                setInterval(function () { CheckAuto(data["checkUrl"]); }, 1000);
 
             }
         };
-        xhttp.open("GET", "https://@Request.Host/login-sqrl?Helper", true);
+        xhttp.open("GET", "@Request.Scheme://@Request.Host/login-sqrl?Helper", true);
         xhttp.send();
     }
 
