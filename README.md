@@ -1,4 +1,4 @@
-<img src='https://www.grc.com/sqrl/SQRL_Logo_80x80.png' alt='QR Code' height="64"><img src='https://chart.googleapis.com/chart?cht=qr&chl=https%3A%2F%2Fgithub.com%2FTechLiam%2FSQRL-For-Dot-Net-Standard&chs=180x180&choe=UTF-8&chld=L|2' alt='QR Code' height="64">
+<img src='https://www.grc.com/sqrl/SQRL_Logo_80x80.png' alt='QR Code' height="64"><img src='https://chart.googleapis.com/chart?cht=qr&chl=https%3A%2F%2Fgithub.com%2FTechLiam%2FSQRL-For-Dot-Net-Standard&chs=180x180&choe=UTF-8&chld=L|2' alt='QR Code' height="64"><img src='https://mondrian.mashable.com/uploads%252Fcard%252Fimage%252F918220%252F316bce31-4c38-4f3b-b743-a17406175286.png%252F950x534__filters%253Aquality%252880%2529.png?signature=ASyPwdNVsAIo5E7uzfpoydo-rmc=&source=https%3A%2F%2Fblueprint-api-production.s3.amazonaws.com' alt='Slack logo' height="64">
 
 # SQRL For .Net Standard
 SQRL (Secure Quick Reliable Login) for the .Net Standard runtimes.
@@ -49,6 +49,9 @@ app.UseAuthentication();
 ```
 
 You will probably of noticed that the AddSqrl has options these are explained in the wiki.
+
+## Contact for help
+Slack: https://sqrlfornet.slack.com/
 
 ## Road map
 | Version | Goals | Status |
