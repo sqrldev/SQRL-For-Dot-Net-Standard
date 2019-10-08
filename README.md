@@ -57,5 +57,6 @@ You will probably of noticed that the AddSqrl has options these are explained in
 | 0.5.0   | lock/unlock/remove SQRL users | Released |
 | 0.6.0   | Diagnostics page for debugging | Released |
 | 0.8.0   | Custom login pages override middleware | Released |
-| 0.9.0   | Examples of NUT storage and management | Developing |
-| 1.0.0   | Add options for SqrlOnly and Hardlock | Developing |
+| 0.9.0   | Examples of NUT storage and management | Released |
+| 1.0.0   | Add options for SqrlOnly and Hardlock | Released |
+| 1.1.0   | Add Ask capability | Development |
