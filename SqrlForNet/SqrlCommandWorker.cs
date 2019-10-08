@@ -30,7 +30,7 @@ namespace SqrlForNet
         }
 
         [Flags]
-        private enum Tif
+        internal enum Tif
         {
             IdMatch = 0x1,
             PreviousIdMatch = 0x2,
@@ -359,7 +359,7 @@ namespace SqrlForNet
 
             if (!valid)
             {
-                SendResponse(Tif.IpMatch | Tif.CommandFailed | Tif.ClientFailed);
+                SendResponse(Tif.IdMatch | Tif.IpMatch | Tif.CommandFailed | Tif.ClientFailed);
                 return;
             }
 

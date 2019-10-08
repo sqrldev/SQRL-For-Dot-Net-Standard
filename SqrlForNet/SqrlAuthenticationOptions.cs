@@ -288,7 +288,23 @@ namespace SqrlForNet
 
             foreach (var responseValue in responseValues)
             {
-                info.ResponseBody.Add(responseValue.Key + ": " + responseValue.Value);
+                if (responseValue.Key == "tif")
+                {
+                    var intValue = int.Parse(responseValue.Value, System.Globalization.NumberStyles.HexNumber);
+                    var translate = Enum.TryParse<SqrlCommandWorker.Tif>(intValue.ToString(), out var tifText);
+                    if (translate)
+                    {
+                        info.ResponseBody.Add(responseValue.Key + ": " + responseValue.Value + " ( " + tifText.ToString("F") + " ) ");
+                    }
+                    else
+                    {
+                        info.ResponseBody.Add(responseValue.Key + ": " + responseValue.Value + " ( !!!UNKNOWN!!! ) ");
+                    }
+                }
+                else
+                {
+                    info.ResponseBody.Add(responseValue.Key + ": " + responseValue.Value);
+                }
             }
             
             TransactionLog.Add(info);

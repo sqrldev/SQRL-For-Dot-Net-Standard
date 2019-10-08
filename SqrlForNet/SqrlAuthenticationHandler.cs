@@ -136,6 +136,10 @@ namespace SqrlForNet
 
         private Task<HandleRequestResult> DiagnosticsPage()
         {
+            if (Request.Query["diag"] == "clear")
+            {
+                SqrlAuthenticationOptions.TransactionLog.Clear();
+            }
             var responseMessage = new StringBuilder();
             responseMessage.AppendLine("<h1>Diagnostics</h1>");
 
@@ -155,7 +159,9 @@ namespace SqrlForNet
                 responseMessage.AppendLine("</div>");
                 responseMessage.AppendLine("<hr/>");
             }
-            
+
+            responseMessage.AppendLine("<a href=\"/login-sqrl?diag=clear\">Clear logs</a>");
+
             var responseMessageBytes = Encoding.ASCII.GetBytes(responseMessage.ToString());
             Response.StatusCode = StatusCodes.Status200OK;
             Response.ContentType = "text/html";
