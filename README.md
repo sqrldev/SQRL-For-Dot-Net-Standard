@@ -52,6 +52,7 @@ You will probably of noticed that the AddSqrl has options these are explained in
 
 ## Contact for help
 Slack: https://sqrlfornet.slack.com/
+
 Join the workspace here: https://join.slack.com/t/sqrlfornet/shared_invite/enQtNzkwNTcxNDM2MjMwLTIxODYwZDZlMTJkNGFkMjBlY2ZjNDBlMDA0ZjExYjA1ZTQ2ZGRmYjY3MzdlZDlmY2U0NTdlNjFlMGI0OWNiOWQ
 
 ## Road map
