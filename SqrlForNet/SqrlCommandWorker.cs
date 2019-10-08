@@ -493,7 +493,7 @@ namespace SqrlForNet
             Response.StatusCode = StatusCodes.Status200OK;
             Response.ContentType = "text/html";
             Response.ContentLength = responseMessageBytes.LongLength;
-            Response.Body.Write(responseMessageBytes, 0, responseMessageBytes.Length);
+            Response.Body.WriteAsync(responseMessageBytes, 0, responseMessageBytes.Length);
         }
 
         private string QrCodePageHtml(string url, string checkUrl, string cancelUrl, string diagUrl)
@@ -550,7 +550,7 @@ namespace SqrlForNet
             Response.StatusCode = StatusCodes.Status200OK;
             Response.ContentType = "application/json";
             Response.ContentLength = responseMessageBytes.LongLength;
-            Response.Body.Write(responseMessageBytes, 0, responseMessageBytes.Length);
+            Response.Body.WriteAsync(responseMessageBytes, 0, responseMessageBytes.Length);
         }
         
         private string GetBase64QrCode(string url)
@@ -580,7 +580,7 @@ namespace SqrlForNet
                 Response.StatusCode = StatusCodes.Status200OK;
                 Response.ContentType = "application/json";
                 Response.ContentLength = responseMessageBytes.LongLength;
-                Response.Body.Write(responseMessageBytes, 0, responseMessageBytes.Length);
+                Response.Body.WriteAsync(responseMessageBytes, 0, responseMessageBytes.Length);
             }
             return isAuthorized;
         }
@@ -618,7 +618,7 @@ namespace SqrlForNet
             Response.ContentType = "application/x-www-form-urlencoded";
             Response.StatusCode = StatusCodes.Status200OK;
             Response.ContentLength = responseMessageBytes.LongLength;
-            Response.Body.Write(responseMessageBytes, 0, responseMessageBytes.Length);
+            Response.Body.WriteAsync(responseMessageBytes, 0, responseMessageBytes.Length);
 
             if (Options.Diagnostics)
             {
