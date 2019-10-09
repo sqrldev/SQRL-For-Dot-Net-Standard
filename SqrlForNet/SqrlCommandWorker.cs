@@ -562,7 +562,20 @@ namespace SqrlForNet
             Response.ContentLength = responseMessageBytes.LongLength;
             Response.Body.WriteAsync(responseMessageBytes, 0, responseMessageBytes.Length);
         }
-        
+
+        internal void CacheHelperValues()
+        {
+            var nut = GenerateNut(Options.EncryptionKey);
+            StoreNut(nut);
+            var url = $"sqrl://{Request.Host}{Options.CallbackPath}?nut=" + nut;
+            var qrCode = GetBase64QrCode(url);
+            var checkUrl = $"{Request.Scheme}://{Request.Host}{Options.CallbackPath}?check=" + nut;
+            Request.HttpContext.Items.Add("CallbackUrl", url);
+            Request.HttpContext.Items.Add("QrData", qrCode);
+            Request.HttpContext.Items.Add("CheckMillieSeconds", Options.CheckMillieSeconds);
+            Request.HttpContext.Items.Add("CheckUrl", checkUrl);
+        }
+
         private string GetBase64QrCode(string url)
         {
             return Convert.ToBase64String(GetBase64QrCodeData(url));
