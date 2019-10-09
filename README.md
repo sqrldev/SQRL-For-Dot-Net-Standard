@@ -1,4 +1,4 @@
-<img src='https://www.grc.com/sqrl/SQRL_Logo_80x80.png' alt='QR Code' height="64"><img src='https://chart.googleapis.com/chart?cht=qr&chl=https%3A%2F%2Fgithub.com%2FTechLiam%2FSQRL-For-Dot-Net-Standard&chs=180x180&choe=UTF-8&chld=L|2' alt='QR Code' height="64"><img src='https://a.slack-edge.com/80588/marketing/img/media-kit/img-logos.png' alt='Slack logo' height="64">
+<img src='https://www.grc.com/sqrl/SQRL_Logo_80x80.png' alt='QR Code' height="64"><img src='https://chart.googleapis.com/chart?cht=qr&chl=https%3A%2F%2Fgithub.com%2FTechLiam%2FSQRL-For-Dot-Net-Standard&chs=180x180&choe=UTF-8&chld=L|2' alt='QR Code' height="64"><img src='https://cdn.brandfolder.io/5H442O3W/as/pl546j-7le8zk-5guop3/Slack_RGB.png' alt='Slack logo' height="64">
 
 # SQRL For .Net Standard
 SQRL (Secure Quick Reliable Login) for the .Net Standard runtimes.
