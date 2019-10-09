@@ -17,4 +17,4 @@ currently being supported with security updates.
 To report a vulnerability please login to the Slack channel or create an issue here these will be validated and prioritied.
 If you feel the vulnerability to be highly critical please message TechLiam.
 
-Once an issue is reported a fix will be issued with in 3 days (when one can be supplied). Then the Nuget package will be updated in the Nuget store. Then an advisory will be created here explaining the issue.
+Once an issue is reported a fix will be issued with in 3 days (when one can be supplied). Then the Nuget package will be updated in the Nuget store.
