@@ -42,6 +42,10 @@ namespace SqrlForNet
         /// <returns>True the request is for the middleware. False the request is not for the middleware.</returns>
         public override Task<bool> ShouldHandleRequestAsync()
         {
+            CommandWorker.Request = Request;
+            CommandWorker.Response = Response;
+            CommandWorker.Options = Options;
+            CommandWorker.CacheHelperValues();
             if (Request.Path.StartsWithSegments(new PathString(Options.CallbackPath)))
             {
                 return Task.FromResult(true);
