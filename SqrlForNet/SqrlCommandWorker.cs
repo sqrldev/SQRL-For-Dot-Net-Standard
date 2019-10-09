@@ -569,8 +569,11 @@ namespace SqrlForNet
             StoreNut(nut);
             var url = $"sqrl://{Request.Host}{Options.CallbackPath}?nut=" + nut;
             var qrCode = GetBase64QrCode(url);
-            SqrlAuthenticationOptions.CachedCallbackUrl = url;
-            SqrlAuthenticationOptions.CachedQrData = qrCode;
+            var checkUrl = $"{Request.Scheme}://{Request.Host}{Options.CallbackPath}?check=" + nut;
+            Request.HttpContext.Items.Add("CallbackUrl", url);
+            Request.HttpContext.Items.Add("QrData", qrCode);
+            Request.HttpContext.Items.Add("CheckMillieSeconds", Options.CheckMillieSeconds);
+            Request.HttpContext.Items.Add("CheckUrl", checkUrl);
         }
 
         private string GetBase64QrCode(string url)

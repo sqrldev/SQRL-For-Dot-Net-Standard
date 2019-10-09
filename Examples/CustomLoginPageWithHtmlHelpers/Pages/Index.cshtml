@@ -1,0 +1,19 @@
+﻿@page
+@model CustomLoginPageWithHtmlHelpers.Pages.IndexModel
+@using SqrlForNet
+<h1>Custom login page using HTML helpers demo</h1>
+@if (!User.Identity.IsAuthenticated)
+{
+    <div id="customSqrlSection">
+        <p>You will see a SQRL login QR code here and a link to start the login</p>
+        @Html.SqrlLink(Request)
+        @Html.SqrlQrImage(Request,false)
+    </div>
+}
+else
+{
+    <p>You are now logged in as @User.Identity.Name</p>
+    <form method="get" action="/logout">
+        <button type="submit">Logout</button>
+    </form>
+}

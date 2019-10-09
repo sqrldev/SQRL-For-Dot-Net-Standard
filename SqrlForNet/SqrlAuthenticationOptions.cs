@@ -11,10 +11,6 @@ namespace SqrlForNet
     public class SqrlAuthenticationOptions : RemoteAuthenticationOptions
     {
 
-        public static string CachedCallbackUrl { get; set; }
-
-        public static string CachedQrData { get; set; }
-
         public byte[] EncryptionKey { get; set; }
 
         public int NutExpiresInSeconds { get; set; }
