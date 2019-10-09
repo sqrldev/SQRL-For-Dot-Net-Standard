@@ -1,4 +1,5 @@
-﻿using System.Text.Encodings.Web;
+﻿using System;
+using System.Text.Encodings.Web;
 using Microsoft.AspNetCore.Html;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -20,11 +21,13 @@ namespace SqrlForNet
 
         public static HtmlString SqrlLink<TModel>(this IHtmlHelper<TModel> helper, HttpRequest request, string text, bool poll)
         {
+            ValidateRequestData(request);
             return SqrlLink(helper, request, text, poll, int.Parse(request.HttpContext.Items["CheckMillieSeconds"].ToString()));
         }
 
         public static HtmlString SqrlLink<TModel>(this IHtmlHelper<TModel> helper, HttpRequest request, string text, bool poll, int pollTime)
         {
+            ValidateRequestData(request);
             var linkTag = new TagBuilder("a");
             linkTag.MergeAttribute("href", request.HttpContext.Items["CallbackUrl"].ToString());
             linkTag.MergeAttribute("onclick", "CpsProcess(this);");
@@ -75,11 +78,13 @@ namespace SqrlForNet
 
         public static HtmlString SqrlQrImage<TModel>(this IHtmlHelper<TModel> helper, HttpRequest request, bool poll)
         {
+            ValidateRequestData(request);
             return SqrlQrImage(helper, request, poll, int.Parse(request.HttpContext.Items["CheckMillieSeconds"].ToString()));
         }
 
         public static HtmlString SqrlQrImage<TModel>(this IHtmlHelper<TModel> helper, HttpRequest request, bool poll, int pollTime)
         {
+            ValidateRequestData(request);
             var stringWriter = new System.IO.StringWriter();
             var imgTag = new TagBuilder("img");
             imgTag.MergeAttribute("src", "data:image/bmp;base64," + request.HttpContext.Items["QrData"].ToString());
@@ -107,6 +112,40 @@ namespace SqrlForNet
                 script.WriteTo(stringWriter, HtmlEncoder.Default);
             }
             return new HtmlString(stringWriter.ToString());
+        }
+
+        public static HtmlString SqrlLinkAndImage<TModel>(this IHtmlHelper<TModel> helper, HttpRequest request)
+        {
+            return SqrlLinkAndImage(helper, request, "SQRL Login");
+        }
+
+        public static HtmlString SqrlLinkAndImage<TModel>(this IHtmlHelper<TModel> helper, HttpRequest request, string text)
+        {
+            return SqrlLinkAndImage(helper, request, text, true);
+        }
+
+        public static HtmlString SqrlLinkAndImage<TModel>(this IHtmlHelper<TModel> helper, HttpRequest request, string text, bool poll)
+        {
+            ValidateRequestData(request);
+            return SqrlLinkAndImage(helper, request, text, poll, int.Parse(request.HttpContext.Items["CheckMillieSeconds"].ToString()));
+        }
+
+        public static HtmlString SqrlLinkAndImage<TModel>(this IHtmlHelper<TModel> helper, HttpRequest request, string text, bool poll, int pollTime)
+        {
+            ValidateRequestData(request);
+            return new HtmlString(SqrlLink(helper, request, text, poll, pollTime).ToString() + SqrlQrImage(helper, request, false).ToString());
+        }
+
+        private static void ValidateRequestData(HttpRequest request)
+        {
+            if (!request.HttpContext.Items.ContainsKey("CallbackUrl") ||
+                !request.HttpContext.Items.ContainsKey("QrData") ||
+                !request.HttpContext.Items.ContainsKey("CheckMillieSeconds") ||
+                !request.HttpContext.Items.ContainsKey("CheckUrl")
+            )
+            {
+                throw new InvalidOperationException("EnableHelpers is disabled for this URL");
+            }
         }
 
     }

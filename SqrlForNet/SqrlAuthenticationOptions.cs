@@ -25,6 +25,10 @@ namespace SqrlForNet
         
         public bool DisableDefaultLoginPage { get; set; }
         
+        public bool EnableHelpers { get; set; }
+
+        public string[] HelpersPaths { get; set; }
+
         /// <summary>
         /// This is the function that is called with the UserId so that the app can look up the user
         /// </summary>
