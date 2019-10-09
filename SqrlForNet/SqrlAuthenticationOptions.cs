@@ -93,8 +93,24 @@ namespace SqrlForNet
         /// </summary>
         private static readonly Dictionary<string, NutInfo> AuthorizedNutList = new Dictionary<string, NutInfo>();
 
+        private void ClearOldNuts()
+        {
+            var oldNuts = NutList.Where(x => x.Value.CreatedDate.AddSeconds(NutExpiresInSeconds * 2) < DateTime.UtcNow);//NutExpiresInSeconds*2 to allow the clients to work out a nut expired
+            var oldAuthNuts = AuthorizedNutList.Where(x => x.Value.CreatedDate.AddSeconds(NutExpiresInSeconds * 2) < DateTime.UtcNow);//NutExpiresInSeconds*2 to allow the clients to work out a nut expired
+            foreach (var oldNut in oldNuts)
+            {
+                NutList.Remove(oldNut.Key);
+            }
+
+            foreach (var oldAuthNut in oldAuthNuts)
+            {
+                AuthorizedNutList.Remove(oldAuthNut.Key);
+            }
+        }
+
         private NutInfo GetNutMethod(string nut, bool authorized)
         {
+            ClearOldNuts();
             if (authorized)
             {
                 return AuthorizedNutList.ContainsKey(nut) ? AuthorizedNutList[nut] : null;
@@ -104,6 +120,7 @@ namespace SqrlForNet
 
         private void StoreNutMethod(string nut, NutInfo info, bool authorized)
         {
+            ClearOldNuts();
             if (authorized)
             {
                 AuthorizedNutList.Add(nut, info);
@@ -116,6 +133,7 @@ namespace SqrlForNet
 
         private void RemoveNutMethod(string nut, bool authorized)
         {
+            ClearOldNuts();
             if (authorized)
             {
                 AuthorizedNutList.Remove(nut);
@@ -128,11 +146,13 @@ namespace SqrlForNet
 
         private bool CheckNutAuthorizedMethod(string nut)
         {
+            ClearOldNuts();
             return AuthorizedNutList.Any(x => x.Key == nut || x.Value.FirstNut == nut);
         }
 
         private string GetNutIdkMethod(string nut)
         {
+            ClearOldNuts();
             return AuthorizedNutList.Single(x => x.Key == nut || x.Value.FirstNut == nut).Value.Idk;
         }
         
