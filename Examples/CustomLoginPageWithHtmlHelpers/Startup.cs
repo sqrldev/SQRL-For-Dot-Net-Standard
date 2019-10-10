@@ -43,6 +43,7 @@ namespace CustomLoginPageWithHtmlHelpers
                     options.Events.OnTicketReceived += OnTicketReceived;
                     options.Diagnostics = true;
                     options.DisableDefaultLoginPage = true;
+                    options.EnableHelpers = true;
                 });
 
             services.AddMvc(options =>
