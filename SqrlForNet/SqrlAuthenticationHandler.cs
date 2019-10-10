@@ -56,7 +56,11 @@ namespace SqrlForNet
                 CommandWorker.Options = Options;
                 CommandWorker.CacheHelperValues();
             }
-            if (Request.Path.StartsWithSegments(new PathString(Options.CallbackPath)))
+            if (Request.Path.StartsWithSegments(new PathString(Options.CallbackPath)) ||
+                (
+                    Options.OtherAuthenticationPaths != null &&
+                    Options.OtherAuthenticationPaths.Any(x => Request.Path.StartsWithSegments(x))
+                ))
             {
                 return Task.FromResult(true);
             }

@@ -29,6 +29,8 @@ namespace SqrlForNet
 
         public string[] HelpersPaths { get; set; }
 
+        public string[] OtherAuthenticationPaths { get; set; }
+
         /// <summary>
         /// This is the function that is called with the UserId so that the app can look up the user
         /// </summary>
@@ -88,7 +90,7 @@ namespace SqrlForNet
 
         public Action<string> HardlockReceived;
 
-        //public Func<HttpContext, AskMessage> ReturnAskMessage;
+        public Func<HttpRequest, AskMessage> GetAskQuestion;
 
         /// <summary>
         /// Used to store the nuts
@@ -218,7 +220,7 @@ namespace SqrlForNet
                 throw new ArgumentException($"{nameof(NutExpiresInSeconds)} must be grater than 0 so that a SQRL client can have a chance to communicate, we suggest a value of 60");
             }
 
-            if (!CallbackPath.HasValue || String.IsNullOrEmpty(CallbackPath))
+            if (!CallbackPath.HasValue || string.IsNullOrEmpty(CallbackPath))
             {
                 throw new ArgumentException($"{nameof(CallbackPath)} this should have a value");
             }
@@ -226,6 +228,38 @@ namespace SqrlForNet
             if (!CallbackPath.Value.StartsWith("/"))
             {
                 throw new ArgumentException($"{nameof(CallbackPath)} must have a '/' at the start");
+            }
+
+            if (OtherAuthenticationPaths != null)
+            {
+                foreach (var otherAuthenticationPath in OtherAuthenticationPaths)
+                {
+                    if (OtherAuthenticationPaths.Count(y => y == otherAuthenticationPath) > 1)
+                    {
+                        throw new ArgumentException($"{nameof(OtherAuthenticationPaths)} is entered more than once");
+                    }
+
+                    if (!otherAuthenticationPath.StartsWith("/"))
+                    {
+                        throw new ArgumentException($"{otherAuthenticationPath} in {nameof(OtherAuthenticationPaths)} must have a '/' at the start");
+                    }
+                }
+            }
+
+            if (HelpersPaths != null)
+            {
+                foreach (var helpersPath in HelpersPaths)
+                {
+                    if (HelpersPaths.Count(y => y == helpersPath) > 1)
+                    {
+                        throw new ArgumentException($"{nameof(HelpersPaths)} is entered more than once");
+                    }
+
+                    if (!helpersPath.StartsWith("/"))
+                    {
+                        throw new ArgumentException($"{helpersPath} in {nameof(HelpersPaths)} must have a '/' at the start");
+                    }
+                }
             }
 
             if (UserExists == null)

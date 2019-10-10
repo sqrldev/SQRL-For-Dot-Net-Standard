@@ -1,10 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
-using System.Runtime.InteropServices;
 using System.Text;
 using Elskom.Generic.Libs;
 using Microsoft.AspNetCore.Http;
@@ -555,6 +553,29 @@ namespace SqrlForNet
             responseMessage.Append("\"checkUrl\":\"" + checkUrl + "\",");
             responseMessage.Append("\"cancelUrl\":\"" + cancelUrl + "\",");
             responseMessage.Append("\"qrCodeBase64\":\"" + GetBase64QrCode(url) + "\"");
+
+            if (Options.OtherAuthenticationPaths != null && Options.OtherAuthenticationPaths.Any())
+            {
+                responseMessage.Append("\"OtherUrls\":[");
+
+                foreach (var optionsOtherAuthenticationPath in Options.OtherAuthenticationPaths)
+                {
+                    var otherUrl = $"sqrl://{Request.Host}{optionsOtherAuthenticationPath}?nut=" + nut;
+                    var otherCheckUrl = $"{Request.Scheme}://{Request.Host}{optionsOtherAuthenticationPath}?check=" +
+                                        nut;
+                    var otherCancelUrl = Base64UrlTextEncoder.Encode(Encoding.ASCII.GetBytes($"{Request.Scheme}://{Request.Host}{optionsOtherAuthenticationPath}"));
+
+                    responseMessage.Append("{");
+                    responseMessage.Append("\"url\":\"" + otherUrl + "\",");
+                    responseMessage.Append("\"checkUrl\":\"" + otherCheckUrl + "\",");
+                    responseMessage.Append("\"cancelUrl\":\"" + otherCancelUrl + "\",");
+                    responseMessage.Append("\"qrCodeBase64\":\"" + GetBase64QrCode(otherUrl) + "\"");
+                    responseMessage.Append("}");
+                }
+
+                responseMessage.Append("]");
+            }
+
             responseMessage.Append("}");
             var responseMessageBytes = Encoding.ASCII.GetBytes(responseMessage.ToString());
             Response.StatusCode = StatusCodes.Status200OK;
@@ -574,6 +595,24 @@ namespace SqrlForNet
             Request.HttpContext.Items.Add("QrData", qrCode);
             Request.HttpContext.Items.Add("CheckMillieSeconds", Options.CheckMillieSeconds);
             Request.HttpContext.Items.Add("CheckUrl", checkUrl);
+            if (Options.OtherAuthenticationPaths != null && Options.OtherAuthenticationPaths.Any())
+            {
+                var otherUrls = new List<OtherUrlsData>();
+                foreach (var optionsOtherAuthenticationPath in Options.OtherAuthenticationPaths)
+                {
+                    var otherUrl = $"sqrl://{Request.Host}{optionsOtherAuthenticationPath}?nut=" + nut;
+                    var otherCheckUrl = $"{Request.Scheme}://{Request.Host}{optionsOtherAuthenticationPath}?check=" + nut;
+
+                    otherUrls.Add(new OtherUrlsData()
+                    {
+                        Path = optionsOtherAuthenticationPath,
+                        Url = checkUrl,
+                        CheckUrl = otherCheckUrl,
+                        QrCodeBase64 = GetBase64QrCode(otherUrl)
+                    });
+                }
+                Request.HttpContext.Items.Add("OtherUrls", otherUrls.ToArray());
+            }
         }
 
         private string GetBase64QrCode(string url)
@@ -635,6 +674,15 @@ namespace SqrlForNet
                 tifValue.HasFlag(Tif.FunctionNotSupported)) && GetCommand() != Command.Query)
             {
                 NoneQueryOptionHandling();
+            }
+
+            if (GetCommand() == Command.Query && tifValue.HasFlag(Tif.IdMatch) && Options.GetAskQuestion != null)
+            {
+                var message = Options.GetAskQuestion.Invoke(Request);
+                if (message != null)
+                {
+                    responseMessageBuilder.AppendLine($"ask={message.ToAskMessage()}");
+                }
             }
 
             var responseMessageBytes = Encoding.ASCII.GetBytes(Base64UrlTextEncoder.Encode(Encoding.ASCII.GetBytes(responseMessageBuilder.ToString())));
