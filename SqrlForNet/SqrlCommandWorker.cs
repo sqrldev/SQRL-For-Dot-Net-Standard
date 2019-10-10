@@ -573,8 +573,8 @@ namespace SqrlForNet
                 foreach (var optionsOtherAuthenticationPath in Options.OtherAuthenticationPaths)
                 {
                     var xParam = optionsOtherAuthenticationPath.AuthenticateSeparately ? "x=" + (optionsOtherAuthenticationPath.Path.Length) + "&" : string.Empty;
-                    var otherUrl = $"sqrl://{Request.Host}{optionsOtherAuthenticationPath}?{xParam}nut={nut}";
-                    var otherCheckUrl = $"{Request.Scheme}://{Request.Host}{optionsOtherAuthenticationPath}?check=" + nut;
+                    var otherUrl = $"sqrl://{Request.Host}{optionsOtherAuthenticationPath.Path}?{xParam}nut={nut}";
+                    var otherCheckUrl = $"{Request.Scheme}://{Request.Host}{optionsOtherAuthenticationPath.Path}?check=" + nut;
                     var otherCancelUrl = Base64UrlTextEncoder.Encode(Encoding.ASCII.GetBytes($"{Request.Scheme}://{Request.Host}{optionsOtherAuthenticationPath.Path}"));
 
                     responseMessage.Append("{");
@@ -613,8 +613,8 @@ namespace SqrlForNet
                 foreach (var optionsOtherAuthenticationPath in Options.OtherAuthenticationPaths)
                 {
                     var xParam = optionsOtherAuthenticationPath.AuthenticateSeparately ? "x=" + (optionsOtherAuthenticationPath.Path.Length) + "&" : string.Empty;
-                    var otherUrl = $"sqrl://{Request.Host}{optionsOtherAuthenticationPath}?{xParam}nut={nut}";
-                    var otherCheckUrl = $"{Request.Scheme}://{Request.Host}{optionsOtherAuthenticationPath}?check=" + nut;
+                    var otherUrl = $"sqrl://{Request.Host}{optionsOtherAuthenticationPath.Path}?{xParam}nut={nut}";
+                    var otherCheckUrl = $"{Request.Scheme}://{Request.Host}{optionsOtherAuthenticationPath.Path}?check=" + nut;
 
                     otherUrls.Add(new OtherUrlsData()
                     {
