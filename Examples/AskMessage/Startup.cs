@@ -9,11 +9,10 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 using SqrlForNet;
 using IHostingEnvironment = Microsoft.AspNetCore.Hosting.IHostingEnvironment;
 
-namespace HelpersProvidersAndOtherPaths
+namespace AskMessageExample
 {
     public class Startup
     {
@@ -48,16 +47,56 @@ namespace HelpersProvidersAndOtherPaths
                     {
                         new OtherAuthenticationPath()
                         {
-                            Path = "/users/login/now",
+                            Path = "/MessageMe/Now",
                             AuthenticateSeparately = false
                         }
                     };
+                    options.GetAskQuestion = GetAskQuestion;
+                    options.ProcessAskResponse = ProcessAskResponse;
                 });
 
             services.AddMvc(options =>
             {
                 options.EnableEndpointRouting = false;
             });
+        }
+
+        private AskMessage GetAskQuestion(HttpRequest request, string sendingNut)
+        {
+            if (request.Path.StartsWithSegments("/MessageMe/Now"))
+            {
+                return new AskMessage()
+                {
+                    Message = "This is a demo message for the SQRL client to show. Did you see the message?",
+                    Button1 = new AskMessage.AskMessageButton()
+                    {
+                        Text = "Yes"
+                    },
+                    Button2 = new AskMessage.AskMessageButton()
+                    {
+                        Text = "No",
+                        Url = "/NoMessagePage"
+                    }
+                };
+            }
+            return null;
+        }
+
+        private bool ProcessAskResponse(HttpRequest request, string nut, int button)
+        {
+            if (request.Path.StartsWithSegments("/MessageMe/Now"))
+            {
+                if (button == 1)
+                {
+                    return true;
+                }
+
+                if (button == 2)
+                {
+                    return false; //Stop authorization
+                }
+            }
+            return false;
         }
 
         public void Configure(IApplicationBuilder app, IHostingEnvironment env)
@@ -149,5 +188,6 @@ namespace HelpersProvidersAndOtherPaths
             context.Principal.AddIdentity(appIdentity);
             return Task.CompletedTask;
         }
+
     }
 }

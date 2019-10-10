@@ -1,0 +1,19 @@
+﻿@page
+@model AskMessageExample.Pages.IndexModel
+<h1>ASK message demo</h1>
+@if (!User.Identity.IsAuthenticated)
+{
+    <div id="customSqrlSection">
+        <p>You will see a SQRL login QR code here and a link to start the login</p>
+        @Html.SqrlLink(Request)
+        @Html.SqrlQrImage(Request, false)
+    </div>
+}
+else
+{
+    <p>You are now logged in as @User.Identity.Name</p>
+    <p>You can click <a href="/MessageMe">here</a> to see a page where you will be authenticated again with an ASK message.</p>
+    <form method="get" action="/logout">
+        <button type="submit">Logout</button>
+    </form>
+}

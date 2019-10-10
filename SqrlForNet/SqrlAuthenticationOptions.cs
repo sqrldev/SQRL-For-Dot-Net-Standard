@@ -29,7 +29,7 @@ namespace SqrlForNet
 
         public string[] HelpersPaths { get; set; }
 
-        public string[] OtherAuthenticationPaths { get; set; }
+        public OtherAuthenticationPath[] OtherAuthenticationPaths { get; set; }
 
         /// <summary>
         /// This is the function that is called with the UserId so that the app can look up the user
@@ -90,7 +90,9 @@ namespace SqrlForNet
 
         public Action<string> HardlockReceived;
 
-        public Func<HttpRequest, AskMessage> GetAskQuestion;
+        public Func<HttpRequest, string, AskMessage> GetAskQuestion;
+
+        public Func<HttpRequest, string, int, bool> ProcessAskResponse;
 
         /// <summary>
         /// Used to store the nuts
@@ -280,7 +282,7 @@ namespace SqrlForNet
                         throw new ArgumentException($"{nameof(OtherAuthenticationPaths)} is entered more than once");
                     }
 
-                    if (!otherAuthenticationPath.StartsWith("/"))
+                    if (!otherAuthenticationPath.Path.StartsWith("/"))
                     {
                         throw new ArgumentException($"{otherAuthenticationPath} in {nameof(OtherAuthenticationPaths)} must have a '/' at the start");
                     }

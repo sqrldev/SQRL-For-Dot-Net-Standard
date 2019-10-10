@@ -59,7 +59,7 @@ namespace SqrlForNet
             if (Request.Path.StartsWithSegments(new PathString(Options.CallbackPath)) ||
                 (
                     Options.OtherAuthenticationPaths != null &&
-                    Options.OtherAuthenticationPaths.Any(x => Request.Path.StartsWithSegments(x))
+                    Options.OtherAuthenticationPaths.Any(x => Request.Path.StartsWithSegments(x.Path))
                 ))
             {
                 return Task.FromResult(true);
