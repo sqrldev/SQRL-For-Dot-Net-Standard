@@ -15,7 +15,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\SqrlForNet\SqrlForNet.csproj" />
+    <ProjectReference Include="..\..\SqrlForNet\SqrlForNet.csproj" />
   </ItemGroup>
 
 </Project>

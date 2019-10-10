@@ -46,11 +46,7 @@ namespace HelpersProvidersAndOtherPaths
                     options.EnableHelpers = true;
                     options.OtherAuthenticationPaths = new string[]
                     {
-                        "/users/login",
-                        "/users/login/now",
-                        "/Other/Validation",
-                        "/Other/EmailMe",
-                        "/Admin/AddUser/Validation"
+                        "/users/login/now"
                     };
                 });
 

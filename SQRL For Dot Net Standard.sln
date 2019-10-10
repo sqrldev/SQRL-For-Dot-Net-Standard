@@ -15,7 +15,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "StoringNuts", "Examples\Sto
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CustomLoginPageWithHtmlHelpers", "Examples\CustomLoginPageWithHtmlHelpers\CustomLoginPageWithHtmlHelpers.csproj", "{CC326E57-D5CD-4AA2-BEBB-AEA3E5A43222}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HelpersProvidersAndOtherPaths", "HelpersProvidersAndOtherPaths\HelpersProvidersAndOtherPaths.csproj", "{9C877057-4C85-4EB0-8921-EA54444A37D9}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HelpersProvidersAndOtherPaths", "Examples\HelpersProvidersAndOtherPaths\HelpersProvidersAndOtherPaths.csproj", "{9C877057-4C85-4EB0-8921-EA54444A37D9}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
