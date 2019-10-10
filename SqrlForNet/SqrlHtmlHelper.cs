@@ -265,14 +265,14 @@ namespace SqrlForNet
         public static HtmlString SqrlLinkAndImageForPath<TModel>(this IHtmlHelper<TModel> helper, HttpRequest request, string text, bool poll, int pollTime, string path)
         {
             ValidateRequestData(request, path);
-            return new HtmlString(SqrlLinkForPath(helper, request, text, poll, pollTime, path).ToString() + SqrlQrImageForPath((helper, request, false, path).ToString());
+            return new HtmlString(SqrlLinkForPath(helper, request, text, poll, pollTime, path).ToString() + SqrlQrImageForPath(helper, request, false, path).ToString());
         }
 
         private static void ValidateRequestData(HttpRequest request, string path = null)
         {
             if (path != null)
             {
-                if (request.HttpContext.Items.ContainsKey("OtherUrls"))
+                if (!request.HttpContext.Items.ContainsKey("OtherUrls"))
                 {
                     throw new InvalidOperationException("EnableHelpers is disabled for this URL");
                 }

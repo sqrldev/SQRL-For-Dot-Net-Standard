@@ -483,7 +483,7 @@ namespace SqrlForNet
         {
             var nut = GenerateNut(Options.EncryptionKey);
             StoreNut(nut);
-            var url = $"sqrl://{Request.Host}{Options.CallbackPath}?nut=" + nut;
+            var url = $"sqrl://{Request.Host}{Options.CallbackPath}?x=" + (Options.CallbackPath.Value.Length) + "&nut=" + nut;
             var checkUrl = $"{Request.Scheme}://{Request.Host}{Options.CallbackPath}?check=" + nut;
             var diagUrl = $"{Request.Scheme}://{Request.Host}{Options.CallbackPath}?diag";
             var cancelUrl = Base64UrlTextEncoder.Encode(Encoding.ASCII.GetBytes($"{Request.Scheme}://{Request.Host}{Options.CancelledPath}"));
@@ -544,7 +544,7 @@ namespace SqrlForNet
         {
             var nut = GenerateNut(Options.EncryptionKey);
             StoreNut(nut);
-            var url = $"sqrl://{Request.Host}{Options.CallbackPath}?nut=" + nut;
+            var url = $"sqrl://{Request.Host}{Options.CallbackPath}?x=" + (Options.CallbackPath.Value.Length) + "&nut=" + nut;
             var checkUrl = $"{Request.Scheme}://{Request.Host}{Options.CallbackPath}?check=" + nut;
             var cancelUrl = Base64UrlTextEncoder.Encode(Encoding.ASCII.GetBytes($"{Request.Scheme}://{Request.Host}{Options.CancelledPath}"));
             var responseMessage = new StringBuilder();
@@ -560,7 +560,7 @@ namespace SqrlForNet
 
                 foreach (var optionsOtherAuthenticationPath in Options.OtherAuthenticationPaths)
                 {
-                    var otherUrl = $"sqrl://{Request.Host}{optionsOtherAuthenticationPath}?nut=" + nut;
+                    var otherUrl = $"sqrl://{Request.Host}{optionsOtherAuthenticationPath}?x=" + (optionsOtherAuthenticationPath.Length) + "&nut=" + nut;
                     var otherCheckUrl = $"{Request.Scheme}://{Request.Host}{optionsOtherAuthenticationPath}?check=" +
                                         nut;
                     var otherCancelUrl = Base64UrlTextEncoder.Encode(Encoding.ASCII.GetBytes($"{Request.Scheme}://{Request.Host}{optionsOtherAuthenticationPath}"));
@@ -588,7 +588,7 @@ namespace SqrlForNet
         {
             var nut = GenerateNut(Options.EncryptionKey);
             StoreNut(nut);
-            var url = $"sqrl://{Request.Host}{Options.CallbackPath}?nut=" + nut;
+            var url = $"sqrl://{Request.Host}{Options.CallbackPath}?x=" + (Options.CallbackPath.Value.Length) + "&nut =" + nut;
             var qrCode = GetBase64QrCode(url);
             var checkUrl = $"{Request.Scheme}://{Request.Host}{Options.CallbackPath}?check=" + nut;
             Request.HttpContext.Items.Add("CallbackUrl", url);
@@ -600,18 +600,18 @@ namespace SqrlForNet
                 var otherUrls = new List<OtherUrlsData>();
                 foreach (var optionsOtherAuthenticationPath in Options.OtherAuthenticationPaths)
                 {
-                    var otherUrl = $"sqrl://{Request.Host}{optionsOtherAuthenticationPath}?nut=" + nut;
+                    var otherUrl = $"sqrl://{Request.Host}{optionsOtherAuthenticationPath}?x=" + (optionsOtherAuthenticationPath.Length) + "&nut=" + nut;
                     var otherCheckUrl = $"{Request.Scheme}://{Request.Host}{optionsOtherAuthenticationPath}?check=" + nut;
 
                     otherUrls.Add(new OtherUrlsData()
                     {
                         Path = optionsOtherAuthenticationPath,
-                        Url = checkUrl,
+                        Url = otherUrl,
                         CheckUrl = otherCheckUrl,
                         QrCodeBase64 = GetBase64QrCode(otherUrl)
                     });
                 }
-                Request.HttpContext.Items.Add("OtherUrls", otherUrls.ToArray());
+                Request.HttpContext.Items.Add("OtherUrls", otherUrls);
             }
         }
 
@@ -655,7 +655,8 @@ namespace SqrlForNet
             responseMessageBuilder.AppendLine("ver=1");
             responseMessageBuilder.AppendLine("nut=" + nut);
             responseMessageBuilder.AppendLine("tif=" + tifValue.ToString("X"));
-            responseMessageBuilder.AppendLine("qry=/login-sqrl?nut=" + nut);
+            var xParam = string.Empty;
+            responseMessageBuilder.AppendLine("qry=" + Request.Path + "?"+xParam+"nut=" + nut);
 
             if (includeCpsUrl)
             {

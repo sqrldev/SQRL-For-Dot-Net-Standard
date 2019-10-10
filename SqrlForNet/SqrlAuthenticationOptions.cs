@@ -104,16 +104,23 @@ namespace SqrlForNet
 
         private void ClearOldNuts()
         {
-            var oldNuts = NutList.Where(x => x.Value.CreatedDate.AddSeconds(NutExpiresInSeconds * 2) < DateTime.UtcNow);//NutExpiresInSeconds*2 to allow the clients to work out a nut expired
-            var oldAuthNuts = AuthorizedNutList.Where(x => x.Value.CreatedDate.AddSeconds(NutExpiresInSeconds * 2) < DateTime.UtcNow);//NutExpiresInSeconds*2 to allow the clients to work out a nut expired
-            foreach (var oldNut in oldNuts)
+            lock (NutList)
             {
-                NutList.Remove(oldNut.Key);
+                var oldNuts = NutList.Where(x => x.Value.CreatedDate.AddSeconds(NutExpiresInSeconds * 2) < DateTime.UtcNow).ToArray();//NutExpiresInSeconds*2 to allow the clients to work out a nut expired
+                foreach (var oldNut in oldNuts)
+                {
+                    NutList.Remove(oldNut.Key);
+                }
+
             }
 
-            foreach (var oldAuthNut in oldAuthNuts)
+            lock (AuthorizedNutList)
             {
-                AuthorizedNutList.Remove(oldAuthNut.Key);
+                var oldAuthNuts = AuthorizedNutList.Where(x => x.Value.CreatedDate.AddSeconds(NutExpiresInSeconds * 2) < DateTime.UtcNow).ToArray();//NutExpiresInSeconds*2 to allow the clients to work out a nut expired
+                foreach (var oldAuthNut in oldAuthNuts)
+                {
+                    AuthorizedNutList.Remove(oldAuthNut.Key);
+                }
             }
         }
 
@@ -122,9 +129,16 @@ namespace SqrlForNet
             ClearOldNuts();
             if (authorized)
             {
-                return AuthorizedNutList.ContainsKey(nut) ? AuthorizedNutList[nut] : null;
+                lock (AuthorizedNutList)
+                {
+                    return AuthorizedNutList.ContainsKey(nut) ? AuthorizedNutList[nut] : null;
+                }
             }
-            return NutList.ContainsKey(nut) ? NutList[nut] : null;
+
+            lock (NutList)
+            {
+                return NutList.ContainsKey(nut) ? NutList[nut] : null;
+            }
         }
 
         private void StoreNutMethod(string nut, NutInfo info, bool authorized)
@@ -132,11 +146,17 @@ namespace SqrlForNet
             ClearOldNuts();
             if (authorized)
             {
-                AuthorizedNutList.Add(nut, info);
+                lock (AuthorizedNutList)
+                {
+                    AuthorizedNutList.Add(nut, info);
+                }
             }
             else
             {
-                NutList.Add(nut, info);
+                lock (NutList)
+                {
+                    NutList.Add(nut, info);
+                }
             }
         }
 
@@ -145,41 +165,62 @@ namespace SqrlForNet
             ClearOldNuts();
             if (authorized)
             {
-                AuthorizedNutList.Remove(nut);
+                lock (AuthorizedNutList)
+                {
+                    AuthorizedNutList.Remove(nut);
+                }
             }
             else
             {
-                NutList.Remove(nut);
+                lock (NutList)
+                {
+                    NutList.Remove(nut);
+                }
             }
         }
 
         private bool CheckNutAuthorizedMethod(string nut)
         {
             ClearOldNuts();
-            return AuthorizedNutList.Any(x => x.Key == nut || x.Value.FirstNut == nut);
+            lock (AuthorizedNutList)
+            {
+                return AuthorizedNutList.Any(x => x.Key == nut || x.Value.FirstNut == nut);
+            }
         }
 
         private string GetNutIdkMethod(string nut)
         {
             ClearOldNuts();
-            return AuthorizedNutList.Single(x => x.Key == nut || x.Value.FirstNut == nut).Value.Idk;
+            lock (AuthorizedNutList)
+            {
+                return AuthorizedNutList.Single(x => x.Key == nut || x.Value.FirstNut == nut).Value.Idk;
+            }
         }
         
         private static readonly Dictionary<string, string> CpsSessions = new Dictionary<string, string>();
         
         private void StoreCpsSessionIdMethod(string sessionId, string userId)
         {
-            CpsSessions.Add(sessionId, userId);
+            lock (CpsSessions)
+            {
+                CpsSessions.Add(sessionId, userId);
+            }
         }
 
         private string GetUserIdByCpsSessionIdMethod(string sessionId)
         {
-            return CpsSessions.ContainsKey(sessionId) ? CpsSessions[sessionId] : null;
+            lock (CpsSessions)
+            {
+                return CpsSessions.ContainsKey(sessionId) ? CpsSessions[sessionId] : null;
+            }
         }
         
         private void RemoveCpsSessionIdMethod(string sessionId)
         {
-            CpsSessions.Remove(sessionId);
+            lock (CpsSessions)
+            {
+                CpsSessions.Remove(sessionId);
+            }
         }
 
         public SqrlAuthenticationOptions()
