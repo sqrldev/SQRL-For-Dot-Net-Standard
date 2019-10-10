@@ -37,19 +37,19 @@ namespace SqrlForNet
             return response.HttpContext.Request.SqrlQrData();
         }
 
-        public static string GetCheckMillieSeconds(HttpRequest request)
+        public static string GetCheckMilliseconds(HttpRequest request)
         {
             return request.HttpContext.Items["CheckMillieSeconds"].ToString();
         }
 
-        public static string SqrlCheckMillieSeconds(this HttpRequest request)
+        public static string SqrlCheckMilliseconds(this HttpRequest request)
         {
-            return GetCheckMillieSeconds(request);
+            return GetCheckMilliseconds(request);
         }
 
-        public static string SqrlCheckMillieSeconds(this HttpResponse response)
+        public static string SqrlCheckMilliseconds(this HttpResponse response)
         {
-            return response.HttpContext.Request.SqrlCheckMillieSeconds();
+            return response.HttpContext.Request.SqrlCheckMilliseconds();
         }
 
         public static string GetCheckUrl(HttpRequest request)
