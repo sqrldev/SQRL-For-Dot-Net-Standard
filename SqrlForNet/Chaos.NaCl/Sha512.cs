@@ -87,7 +87,7 @@ namespace SqrlForNet.Chaos.NaCl
         /// Finalizes SHA-512 hashing
         /// </summary>
         /// <param name="output">Output buffer</param>
-        public void Finalize(ArraySegment<byte> output)
+        public void FinalizeHash(ArraySegment<byte> output)
         {
             Update(_padding, 0, _padding.Length);
             Array16<ulong> block;
@@ -117,10 +117,10 @@ namespace SqrlForNet.Chaos.NaCl
         /// Finalizes SHA-512 hashing.
         /// </summary>
         /// <returns>Hash bytes</returns>
-        public byte[] Finalize()
+        public byte[] FinalizeHash()
         {
             var result = new byte[64];
-            Finalize(new ArraySegment<byte>(result));
+            FinalizeHash(new ArraySegment<byte>(result));
             return result;
         }
 
@@ -145,7 +145,7 @@ namespace SqrlForNet.Chaos.NaCl
         {
             var hasher = new Sha512();
             hasher.Update(data, index, length);
-            return hasher.Finalize();
+            return hasher.FinalizeHash();
         }
     }
 }
