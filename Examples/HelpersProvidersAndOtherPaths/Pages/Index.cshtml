@@ -1,0 +1,46 @@
+﻿@page
+@model HelpersProvidersAndOtherPaths.Pages.IndexModel
+@using SqrlForNet
+@if (!User.Identity.IsAuthenticated)
+{
+    <h1>HTML Helpers</h1>
+    <div id="HTMLHelpers">
+        <p>These are simple HTML helpers</p>
+        @Html.SqrlLink(Request)
+        @Html.SqrlQrImage(Request, false)
+        <p>This is the same as the last one but one call</p>
+        @Html.SqrlLinkAndImage(Request)
+
+        <p>These have a custom text value</p>
+        @Html.SqrlLink(Request, "Custom text 1")
+        @Html.SqrlLinkAndImage(Request, "Custom text 2")
+
+        <p>Turned polling off</p>
+        @Html.SqrlLink(Request, "Custom text 3", false)
+        @Html.SqrlQrImage(Request, false)
+        @Html.SqrlLinkAndImage(Request, "Custom text 4", false)
+
+        <p>Changed polling timer here</p>
+        @Html.SqrlLink(Request, "Custom text 5", true, 1000)
+        @Html.SqrlQrImage(Request, true)
+        @Html.SqrlLinkAndImage(Request, "Custom text 6", true, 1000)
+
+    </div>
+
+    <h1>Provider usage</h1>
+    
+    <div id="Provider">
+        @SqrlUrlProvider.GetUrl(Request)
+        @SqrlUrlProvider.GetCheckUrl(Request)
+        @SqrlUrlProvider.GetCheckMilliseconds(Request)
+        @SqrlUrlProvider.GetQrData(Request)
+    </div>
+
+}
+else
+{
+    <p>You are now logged in as @User.Identity.Name</p>
+    <form method="get" action="/logout">
+        <button type="submit">Logout</button>
+    </form>
+}

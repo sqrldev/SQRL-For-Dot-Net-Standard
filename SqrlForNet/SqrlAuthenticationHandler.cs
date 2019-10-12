@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Security.Claims;
 using System.Text;
 using System.Text.Encodings.Web;
@@ -42,7 +43,24 @@ namespace SqrlForNet
         /// <returns>True the request is for the middleware. False the request is not for the middleware.</returns>
         public override Task<bool> ShouldHandleRequestAsync()
         {
-            if (Request.Path.StartsWithSegments(new PathString(Options.CallbackPath)))
+            if (Options.EnableHelpers &&
+                (
+                    (
+                        Options.HelpersPaths != null &&
+                        Options.HelpersPaths.Any(x => Request.Path.StartsWithSegments(new PathString(x)))
+                    ) ||
+                    Options.HelpersPaths == null))
+            {
+                CommandWorker.Request = Request;
+                CommandWorker.Response = Response;
+                CommandWorker.Options = Options;
+                CommandWorker.CacheHelperValues();
+            }
+            if (Request.Path.StartsWithSegments(new PathString(Options.CallbackPath)) ||
+                (
+                    Options.OtherAuthenticationPaths != null &&
+                    Options.OtherAuthenticationPaths.Any(x => Request.Path.StartsWithSegments(x.Path))
+                ))
             {
                 return Task.FromResult(true);
             }

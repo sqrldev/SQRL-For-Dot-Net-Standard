@@ -1,10 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
-using System.Runtime.InteropServices;
 using System.Text;
 using Elskom.Generic.Libs;
 using Microsoft.AspNetCore.Http;
@@ -211,6 +209,18 @@ namespace SqrlForNet
         {
             if (ValidateSignature())
             {
+                if (GetClientParams().ContainsKey("btn"))
+                {
+                    if (!int.TryParse(GetClientParams()["btn"], out var buttonValue))
+                    {
+                        BadCommand();
+                    }
+                    if (!Options.ProcessAskResponse.Invoke(Request, Request.Query["nut"], buttonValue))
+                    {
+                        SendResponse(Tif.IdMatch | Tif.IpMatch);
+                        return;
+                    }
+                }
                 CommandAction(GetCommand());
             }
             else
@@ -555,6 +565,29 @@ namespace SqrlForNet
             responseMessage.Append("\"checkUrl\":\"" + checkUrl + "\",");
             responseMessage.Append("\"cancelUrl\":\"" + cancelUrl + "\",");
             responseMessage.Append("\"qrCodeBase64\":\"" + GetBase64QrCode(url) + "\"");
+
+            if (Options.OtherAuthenticationPaths != null && Options.OtherAuthenticationPaths.Any())
+            {
+                responseMessage.Append("\"OtherUrls\":[");
+
+                foreach (var optionsOtherAuthenticationPath in Options.OtherAuthenticationPaths)
+                {
+                    var xParam = optionsOtherAuthenticationPath.AuthenticateSeparately ? "x=" + (optionsOtherAuthenticationPath.Path.Length) + "&" : string.Empty;
+                    var otherUrl = $"sqrl://{Request.Host}{optionsOtherAuthenticationPath.Path}?{xParam}nut={nut}";
+                    var otherCheckUrl = $"{Request.Scheme}://{Request.Host}{optionsOtherAuthenticationPath.Path}?check=" + nut;
+                    var otherCancelUrl = Base64UrlTextEncoder.Encode(Encoding.ASCII.GetBytes($"{Request.Scheme}://{Request.Host}{optionsOtherAuthenticationPath.Path}"));
+
+                    responseMessage.Append("{");
+                    responseMessage.Append("\"url\":\"" + otherUrl + "\",");
+                    responseMessage.Append("\"checkUrl\":\"" + otherCheckUrl + "\",");
+                    responseMessage.Append("\"cancelUrl\":\"" + otherCancelUrl + "\",");
+                    responseMessage.Append("\"qrCodeBase64\":\"" + GetBase64QrCode(otherUrl) + "\"");
+                    responseMessage.Append("}");
+                }
+
+                responseMessage.Append("]");
+            }
+
             responseMessage.Append("}");
             var responseMessageBytes = Encoding.ASCII.GetBytes(responseMessage.ToString());
             Response.StatusCode = StatusCodes.Status200OK;
@@ -562,7 +595,39 @@ namespace SqrlForNet
             Response.ContentLength = responseMessageBytes.LongLength;
             Response.Body.WriteAsync(responseMessageBytes, 0, responseMessageBytes.Length);
         }
-        
+
+        internal void CacheHelperValues()
+        {
+            var nut = GenerateNut(Options.EncryptionKey);
+            StoreNut(nut);
+            var url = $"sqrl://{Request.Host}{Options.CallbackPath}?nut=" + nut;
+            var qrCode = GetBase64QrCode(url);
+            var checkUrl = $"{Request.Scheme}://{Request.Host}{Options.CallbackPath}?check=" + nut;
+            Request.HttpContext.Items.Add("CallbackUrl", url);
+            Request.HttpContext.Items.Add("QrData", qrCode);
+            Request.HttpContext.Items.Add("CheckMillieSeconds", Options.CheckMillieSeconds);
+            Request.HttpContext.Items.Add("CheckUrl", checkUrl);
+            if (Options.OtherAuthenticationPaths != null && Options.OtherAuthenticationPaths.Any())
+            {
+                var otherUrls = new List<OtherUrlsData>();
+                foreach (var optionsOtherAuthenticationPath in Options.OtherAuthenticationPaths)
+                {
+                    var xParam = optionsOtherAuthenticationPath.AuthenticateSeparately ? "x=" + (optionsOtherAuthenticationPath.Path.Length) + "&" : string.Empty;
+                    var otherUrl = $"sqrl://{Request.Host}{optionsOtherAuthenticationPath.Path}?{xParam}nut={nut}";
+                    var otherCheckUrl = $"{Request.Scheme}://{Request.Host}{optionsOtherAuthenticationPath.Path}?check=" + nut;
+
+                    otherUrls.Add(new OtherUrlsData()
+                    {
+                        Path = optionsOtherAuthenticationPath.Path,
+                        Url = otherUrl,
+                        CheckUrl = otherCheckUrl,
+                        QrCodeBase64 = GetBase64QrCode(otherUrl)
+                    });
+                }
+                Request.HttpContext.Items.Add("OtherUrls", otherUrls);
+            }
+        }
+
         private string GetBase64QrCode(string url)
         {
             return Convert.ToBase64String(GetBase64QrCodeData(url));
@@ -603,11 +668,11 @@ namespace SqrlForNet
             responseMessageBuilder.AppendLine("ver=1");
             responseMessageBuilder.AppendLine("nut=" + nut);
             responseMessageBuilder.AppendLine("tif=" + tifValue.ToString("X"));
-            responseMessageBuilder.AppendLine("qry=/login-sqrl?nut=" + nut);
+            responseMessageBuilder.AppendLine("qry=" + Request.Path + "?nut=" + nut);
 
             if (includeCpsUrl)
             {
-                responseMessageBuilder.AppendLine("url=" + Request.Scheme + "://" + Request.Host + "/login-sqrl?cps=" + GenerateCpsCode());
+                responseMessageBuilder.AppendLine("url=" + Request.Scheme + "://" + Request.Host + Request.Path + "?cps=" + GenerateCpsCode());
             }
 
             if ((tifValue.HasFlag(Tif.IdMatch) || tifValue.HasFlag(Tif.PreviousIdMatch) || tifValue.HasFlag(Tif.SqrlDisabled)))
@@ -622,6 +687,15 @@ namespace SqrlForNet
                 tifValue.HasFlag(Tif.FunctionNotSupported)) && GetCommand() != Command.Query)
             {
                 NoneQueryOptionHandling();
+            }
+
+            if (GetCommand() == Command.Query && tifValue.HasFlag(Tif.IdMatch) && Options.GetAskQuestion != null)
+            {
+                var message = Options.GetAskQuestion.Invoke(Request, nut);
+                if (message != null)
+                {
+                    responseMessageBuilder.AppendLine($"ask={message.ToAskMessage()}");
+                }
             }
 
             var responseMessageBytes = Encoding.ASCII.GetBytes(Base64UrlTextEncoder.Encode(Encoding.ASCII.GetBytes(responseMessageBuilder.ToString())));

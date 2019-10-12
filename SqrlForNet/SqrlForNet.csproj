@@ -4,7 +4,7 @@
     <TargetFramework>netstandard2.0</TargetFramework>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
-    <Version>1.0.1</Version>
+    <Version>1.1.0</Version>
     <Authors>Liam Raper</Authors>
     <Description>SQRL for the .Net Standard runtimes. Secure Quick Reliable Login is a highly secure user privacy based authentication system that removes the need for users to have more than one password for a global identity https://www.grc.com/sqrl/sqrl.htm for more information of the protocal.</Description>
     <Copyright>Liam Raper 2019</Copyright>
@@ -12,7 +12,8 @@
     <PackageProjectUrl>https://github.com/TechLiam/SQRL-For-Dot-Net-Standard</PackageProjectUrl>
     <RepositoryUrl>https://github.com/TechLiam/SQRL-For-Dot-Net-Standard</RepositoryUrl>
     <PackageTags>SQRL, Authentication, ASP.net, ASP.net core, .net core 3.0, ASP.net 3.0</PackageTags>
-    <PackageReleaseNotes>1.0.1 - Added the removal of old NUTs for default in memory operation
+    <PackageReleaseNotes>1.1.0 - Added ASK capabilities, HTML helpers and SQRL Provider (used to get SQRL links server side)
+1.0.1 - Added the removal of old NUTs for default in memory operation
 1.0.0 - Production ready!!! CPS implomented and all opts have hooks
 0.9.0 - .net core 3.0 friendly
 0.8.1 - Fixed bug found by DEllner with iOS app expecting content type of application/x-www-form-urlencoded this is now sent
@@ -23,19 +24,25 @@
 0.5.1 - Fix for missing validation on RemoveUser Action
 0.5.0 - Beta release added support for Enable, Disable and Remove
 0.1.0 - Beta release awaiting feedback from SQRL developer groups
-    </PackageReleaseNotes>
+</PackageReleaseNotes>
     <NeutralLanguage>en-GB</NeutralLanguage>
     <RepositoryType>GitHub</RepositoryType>
     <SignAssembly>false</SignAssembly>
     <PackageIcon>sqrllogo.png</PackageIcon>
-    <PackageVersion>1.0.1</PackageVersion>
+    <PackageVersion>1.1.0</PackageVersion>
     <Title>SqrlForNet</Title>
+    <AssemblyVersion>1.1.0</AssemblyVersion>
+    <FileVersion>1.1.0.0</FileVersion>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <NoWarn />
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <WarningsAsErrors />
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <DefineConstants />
   </PropertyGroup>
 
   <ItemGroup>
@@ -51,6 +58,15 @@
 
   <ItemGroup>
     <None Include="sqrllogo.png" Pack="true" PackagePath="\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="Microsoft.AspNetCore.Html.Abstractions">
+      <HintPath>..\..\..\..\..\..\Program Files\dotnet\sdk\NuGetFallbackFolder\microsoft.aspnetcore.html.abstractions\2.2.0\lib\netstandard2.0\Microsoft.AspNetCore.Html.Abstractions.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.AspNetCore.Mvc.ViewFeatures">
+      <HintPath>..\..\..\..\..\..\Program Files\dotnet\sdk\NuGetFallbackFolder\microsoft.aspnetcore.mvc.viewfeatures\2.2.0\lib\netstandard2.0\Microsoft.AspNetCore.Mvc.ViewFeatures.dll</HintPath>
+    </Reference>
   </ItemGroup>
 
 </Project>
