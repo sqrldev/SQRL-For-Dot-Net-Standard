@@ -106,7 +106,7 @@ namespace SqrlForNet
             {
                 BadCommand();
             }
-            Options.RemoveNut.Invoke(Request.Query["nut"], false);
+            Options.RemoveNutInternal(Request.Query["nut"], false);
         }
 
         private bool IsValidNutRequest()
@@ -159,7 +159,7 @@ namespace SqrlForNet
         private NutValidationResult NutStatus()
         {
             var nut = Request.Query["nut"];
-            var nutInfo = Options.GetNut.Invoke(nut, false);
+            var nutInfo = Options.GetNutInternal(nut, false);
 
             if (nutInfo == null)
             {
@@ -209,13 +209,13 @@ namespace SqrlForNet
         {
             if (ValidateSignature())
             {
-                if (GetClientParams().ContainsKey("btn"))
+                if (GetClientParams().ContainsKey("btn") && (Options.ProcessAskResponse != null || Options.ProcessAskResponseAsync != null))
                 {
                     if (!int.TryParse(GetClientParams()["btn"], out var buttonValue))
                     {
                         BadCommand();
                     }
-                    if (!Options.ProcessAskResponse.Invoke(Request, Request.Query["nut"], buttonValue))
+                    if (!Options.ProcessAskResponseInternal(Request, Request.Query["nut"], buttonValue))
                     {
                         SendResponse(Tif.IdMatch | Tif.IpMatch);
                         return;
@@ -253,12 +253,12 @@ namespace SqrlForNet
         {
             var idk = clientParams["idk"];
 
-            var userExists = Options.UserExists.Invoke(idk, Request.HttpContext);
+            var userExists = Options.UserExistsInternal(idk, Request.HttpContext);
             var prevUserExists = UserLookUpResult.Unknown;
             if (clientParams.ContainsKey("pidk"))
             {
                 var pidk = clientParams["pidk"];
-                prevUserExists = Options.UserExists.Invoke(pidk, Request.HttpContext);
+                prevUserExists = Options.UserExistsInternal(pidk, Request.HttpContext);
             }
             return new UserLookupResults()
             {
@@ -324,7 +324,7 @@ namespace SqrlForNet
             var opts = ParseOpts();
             if (!opts[OptKey.cps])
             {
-                var nutInfo = Options.GetNut.Invoke(nut, false);
+                var nutInfo = Options.GetNutInternal(nut, false);
                 var authNutInfo = new NutInfo
                 {
                     FirstNut = nutInfo.FirstNut,
@@ -332,7 +332,7 @@ namespace SqrlForNet
                     IpAddress = nutInfo.IpAddress,
                     Idk = nutInfo.Idk
                 };
-                Options.StoreNut.Invoke(nut, authNutInfo, true);
+                Options.StoreNutInternal(nut, authNutInfo, true);
                 return true;
             }
             return false;
@@ -347,7 +347,7 @@ namespace SqrlForNet
             else
             {
                 var idk = clientParams["idk"];
-                Options.UpdateUserId.Invoke(idk, clientParams["suk"], clientParams["vuk"], clientParams["pidk"], Request.HttpContext);
+                Options.UpdateUserIdInternal(idk, clientParams["suk"], clientParams["vuk"], clientParams["pidk"], Request.HttpContext);
                 SendResponse(Tif.IdMatch | Tif.IpMatch, !AuthorizeNut(Request.Query["nut"]));
             }
         }
@@ -363,7 +363,7 @@ namespace SqrlForNet
             var idk = clientParams["idk"];
 
             var message = Encoding.ASCII.GetBytes(Request.Form["client"] + Request.Form["server"]);
-            var usersVuk = Base64UrlTextEncoder.Decode(Options.GetUserVuk.Invoke(idk, Request.HttpContext));
+            var usersVuk = Base64UrlTextEncoder.Decode(Options.GetUserVukInternal(idk, Request.HttpContext));
             var urs = Base64UrlTextEncoder.Decode(Request.Form["urs"]);
             var valid = Ed25519.Verify(urs, message, usersVuk);
 
@@ -373,7 +373,7 @@ namespace SqrlForNet
                 return;
             }
 
-            Options.UnlockUser.Invoke(idk, Request.HttpContext);
+            Options.UnlockUserInternal(idk, Request.HttpContext);
             SendResponse(Tif.IdMatch | Tif.IpMatch, !AuthorizeNut(Request.Query["nut"]));
         }
 
@@ -388,7 +388,7 @@ namespace SqrlForNet
             var idk = clientParams["idk"];
 
             var message = Encoding.ASCII.GetBytes(Request.Form["client"] + Request.Form["server"]);
-            var usersVuk = Base64UrlTextEncoder.Decode(Options.GetUserVuk.Invoke(idk, Request.HttpContext));
+            var usersVuk = Base64UrlTextEncoder.Decode(Options.GetUserVukInternal(idk, Request.HttpContext));
             var urs = Base64UrlTextEncoder.Decode(Request.Form["urs"]);
             var valid = Ed25519.Verify(urs, message, usersVuk);
 
@@ -398,16 +398,16 @@ namespace SqrlForNet
                 return;
             }
 
-            Options.RemoveUser.Invoke(idk, Request.HttpContext);
+            Options.RemoveUserInternal(idk, Request.HttpContext);
             SendResponse(Tif.IdMatch | Tif.IpMatch, !AuthorizeNut(Request.Query["nut"]));
         }
 
         private void TryCreateNewUser(Dictionary<string, string> clientParams)
         {
-            if (Options.CreateUser != null)
+            if (Options.CreateUser != null || Options.CreateUserAsync != null)
             {
                 var idk = clientParams["idk"];
-                Options.CreateUser.Invoke(idk, clientParams["suk"], clientParams["vuk"], Request.HttpContext);
+                Options.CreateUserInternal(idk, clientParams["suk"], clientParams["vuk"], Request.HttpContext);
                 SendResponse(Tif.IdMatch | Tif.IpMatch, !AuthorizeNut(Request.Query["nut"]));
             }
             else
@@ -423,7 +423,7 @@ namespace SqrlForNet
             if (userLookUp.UserExists == UserLookUpResult.Exists)
             {
                 var idk = clientParams["idk"];
-                Options.LockUser.Invoke(idk, Request.HttpContext);
+                Options.LockUserInternal(idk, Request.HttpContext);
                 SendResponse(Tif.IdMatch | Tif.IpMatch | Tif.SqrlDisabled);
             }
             else
@@ -646,7 +646,7 @@ namespace SqrlForNet
         {
             var checkNut = Request.Query["check"];
 
-            var isAuthorized = Options.CheckNutAuthorized.Invoke(checkNut);
+            var isAuthorized = Options.CheckNutAuthorizedInternal(checkNut);
             if (!isAuthorized)
             {
                 var responseMessage = new StringBuilder();
@@ -678,7 +678,7 @@ namespace SqrlForNet
             if ((tifValue.HasFlag(Tif.IdMatch) || tifValue.HasFlag(Tif.PreviousIdMatch) || tifValue.HasFlag(Tif.SqrlDisabled)))
             {
                 var idk = GetClientParams()["idk"];
-                var suk = Options.GetUserSuk.Invoke(idk, Request.HttpContext);
+                var suk = Options.GetUserSukInternal(idk, Request.HttpContext);
                 responseMessageBuilder.AppendLine("suk=" + Base64UrlTextEncoder.Encode(Encoding.ASCII.GetBytes(suk)));
             }
 
@@ -689,9 +689,9 @@ namespace SqrlForNet
                 NoneQueryOptionHandling();
             }
 
-            if (GetCommand() == Command.Query && tifValue.HasFlag(Tif.IdMatch) && Options.GetAskQuestion != null)
+            if (GetCommand() == Command.Query && tifValue.HasFlag(Tif.IdMatch) && (Options.GetAskQuestion != null || Options.GetAskQuestionAsync != null))
             {
-                var message = Options.GetAskQuestion.Invoke(Request, nut);
+                var message = Options.GetAskQuestionInternal(Request, nut);
                 if (message != null)
                 {
                     responseMessageBuilder.AppendLine($"ask={message.ToAskMessage()}");
@@ -713,7 +713,7 @@ namespace SqrlForNet
 
         private void StoreNut(string nut)
         {
-            Options.StoreNut.Invoke(nut, NewNutInfo(), false);
+            Options.StoreNutInternal(nut, NewNutInfo(), false);
         }
 
         private NutInfo NewNutInfo()
@@ -721,7 +721,7 @@ namespace SqrlForNet
             NutInfo currentNut = null;
             if (Request.Query.ContainsKey("nut"))
             {
-                currentNut = Options.GetNut.Invoke(Request.Query["nut"], false);
+                currentNut = Options.GetNutInternal(Request.Query["nut"], false);
             }
             return new NutInfo
             {
@@ -802,19 +802,19 @@ namespace SqrlForNet
         public string GenerateCpsCode()
         {
             var code = Guid.NewGuid().ToString("N");
-            Options.StoreCpsSessionId.Invoke(code, GetClientParams()["idk"]);
+            Options.StoreCpsSessionIdInternal(code, GetClientParams()["idk"]);
             return code;
         }
 
         private void NoneQueryOptionHandling()
         {
-            if (GetClientParams().ContainsKey("opt") && ParseOpts()[OptKey.sqrlonly] && Options.SqrlOnlyReceived != null)
+            if (GetClientParams().ContainsKey("opt") && ParseOpts()[OptKey.sqrlonly] && (Options.SqrlOnlyReceived != null || Options.SqrlOnlyReceivedAsync != null))
             {
-                Options.SqrlOnlyReceived.Invoke(GetClientParams()["idk"]);
+                Options.SqrlOnlyReceivedInternal(GetClientParams()["idk"]);
             }
-            if (GetClientParams().ContainsKey("opt") && ParseOpts()[OptKey.hardlock] && Options.HardlockReceived != null)
+            if (GetClientParams().ContainsKey("opt") && ParseOpts()[OptKey.hardlock] && (Options.HardlockReceived != null || Options.HardlockReceivedAsync != null))
             {
-                Options.HardlockReceived.Invoke(GetClientParams()["idk"]);
+                Options.HardlockReceivedInternal(GetClientParams()["idk"]);
             }
         }
 

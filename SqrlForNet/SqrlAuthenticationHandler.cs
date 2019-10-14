@@ -111,11 +111,11 @@ namespace SqrlForNet
             if (result)
             {
                 var claims = new[] {
-                    new Claim(ClaimTypes.NameIdentifier, Options.GetNutIdk.Invoke(Request.Query["check"])),
+                    new Claim(ClaimTypes.NameIdentifier, Options.GetNutIdkInternal(Request.Query["check"])),
                     new Claim(ClaimTypes.Name, Options.NameForAnonymous)
                 };
 
-                Options.RemoveNut.Invoke(Request.Query["check"], true);
+                Options.RemoveNutInternal(Request.Query["check"], true);
 
                 var identity = new ClaimsIdentity(claims, Scheme.Name);
                 var principal = new ClaimsPrincipal(identity);
@@ -130,7 +130,7 @@ namespace SqrlForNet
 
         private Task<HandleRequestResult> CheckCpsRequest()
         {
-            var result = Options.GetUserIdByCpsSessionId.Invoke(Request.Query["cps"]);
+            var result = Options.GetUserIdByCpsSessionIdInternal(Request.Query["cps"]);
             if (!string.IsNullOrEmpty(result))
             {
                 var claims = new[] {
@@ -138,7 +138,7 @@ namespace SqrlForNet
                     new Claim(ClaimTypes.Name, Options.NameForAnonymous)
                 };
 
-                Options.RemoveCpsSessionId.Invoke(Request.Query["cps"]);
+                Options.RemoveCpsSessionIdInternal(Request.Query["cps"]);
 
                 var identity = new ClaimsIdentity(claims, Scheme.Name);
                 var principal = new ClaimsPrincipal(identity);
