@@ -64,5 +64,7 @@ Join the workspace here: https://join.slack.com/t/sqrlfornet/shared_invite/enQtN
 | 0.8.0   | Custom login pages override middleware | Released |
 | 0.9.0   | Examples of NUT storage and management | Released |
 | 1.0.0   | Add options for SqrlOnly and Hardlock | Released |
-| 1.1.0   | Add Ask capability | Development |
-| 1.2.0   | Add rate limits for specific queries By IP address and add async hooks for cleaner database operations | Not started |
+| 1.1.0   | Add Ask capability | Released |
+| 1.2.0   | - Add rate limits for specific queries By IP address
+- add async hooks for cleaner database operations
+- Add logging | Developing |
