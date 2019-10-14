@@ -16,6 +16,8 @@ namespace SqrlForNet
 
         internal SqrlCommandWorker CommandWorker;
 
+        internal ILogger Logger;
+
         public SqrlAuthenticationHandler(
             IOptionsMonitor<SqrlAuthenticationOptions> options,
             ILoggerFactory logger,
@@ -23,7 +25,8 @@ namespace SqrlForNet
             ISystemClock clock) :
             base(options, logger, encoder, clock)
         {
-            CommandWorker = new SqrlCommandWorker();
+            Logger = logger.CreateLogger("SQRLForNet");
+            CommandWorker = new SqrlCommandWorker(Logger);
         }
 
         /// <summary>
@@ -33,6 +36,7 @@ namespace SqrlForNet
         /// <returns>A completed task to indicate that the challenge was handled</returns>
         protected override Task HandleChallengeAsync(AuthenticationProperties properties)
         {
+            Logger.LogInformation("Challenge started");
             Response.Redirect(Options.CallbackPath);
             return Task.CompletedTask;
         }
@@ -43,6 +47,7 @@ namespace SqrlForNet
         /// <returns>True the request is for the middleware. False the request is not for the middleware.</returns>
         public override Task<bool> ShouldHandleRequestAsync()
         {
+            Logger.LogTrace("Started checking if request is handled");
             if (Options.EnableHelpers &&
                 (
                     (
@@ -51,6 +56,7 @@ namespace SqrlForNet
                     ) ||
                     Options.HelpersPaths == null))
             {
+                Logger.LogInformation("Helpers are enabled");
                 CommandWorker.Request = Request;
                 CommandWorker.Response = Response;
                 CommandWorker.Options = Options;
@@ -62,8 +68,10 @@ namespace SqrlForNet
                     Options.OtherAuthenticationPaths.Any(x => Request.Path.StartsWithSegments(x.Path))
                 ))
             {
+                Logger.LogInformation("Request will be handled my middleware");
                 return Task.FromResult(true);
             }
+            Logger.LogTrace("Request not handled");
             return base.ShouldHandleRequestAsync();
         }
 
@@ -73,35 +81,44 @@ namespace SqrlForNet
         /// <returns>Handle which indicates that the request has been responded to or Success if the user has been logged in</returns>
         protected override Task<HandleRequestResult> HandleRemoteAuthenticateAsync()
         {
+            Logger.LogTrace("Started working on request");
+            
             CommandWorker.Request = Request;
             CommandWorker.Response = Response;
             CommandWorker.Options = Options;//Options will probably never change but to make sure the static object is up to date lets set it
 
             if (Request.Query.ContainsKey("nut")) //Generally requests from a SQRL client
             {
+                Logger.LogInformation("Processing nut request");
                 CommandWorker.NutRequest();
             }
             else if (Request.Query.ContainsKey("check")) //Helper for initial page to check when a user has logged in
             {
+                Logger.LogInformation("Processing check request");
                 return CheckRequest();
             }
             else if (Request.Query.ContainsKey("cps"))
             {
+                Logger.LogInformation("Processing cps request");
                 return CheckCpsRequest();
             }
             else if (Request.Query.ContainsKey("diag") && Options.Diagnostics)
             {
+                Logger.LogInformation("Processing diag request");
                 return DiagnosticsPage();
             }
             else if (Request.Query.ContainsKey("helper"))
             {
+                Logger.LogInformation("Processing helper request");
                 CommandWorker.HelperJson();
             }
             else if (!Options.DisableDefaultLoginPage) //For everything else we should only return a login page
             {
+                Logger.LogInformation("Processing default login page request");
                 CommandWorker.QrCodePage();
             }
             
+            Logger.LogTrace("Finished working on request");
             return Task.FromResult(HandleRequestResult.Handle());
         }
 

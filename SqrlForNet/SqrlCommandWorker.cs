@@ -7,6 +7,7 @@ using System.Text;
 using Elskom.Generic.Libs;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.WebUtilities;
+using Microsoft.Extensions.Logging;
 using Net.Codecrete.QrCodeGenerator;
 using SqrlForNet.Chaos.NaCl;
 
@@ -98,6 +99,7 @@ namespace SqrlForNet
         /// </summary>
         public void NutRequest()
         {
+            _logger.LogTrace("Started to validate NUT request");
             if (IsValidNutRequest())
             {
                 NutValidationMessage(NutStatus());
@@ -106,6 +108,7 @@ namespace SqrlForNet
             {
                 BadCommand();
             }
+            _logger.LogTrace("Removing NUT: {0}", Request.Query["nut"]);
             Options.RemoveNutInternal(Request.Query["nut"], false);
         }
 
@@ -122,17 +125,27 @@ namespace SqrlForNet
                     string.IsNullOrEmpty(serverInfo) ||
                     string.IsNullOrEmpty(idsInfo))
                 {
+                    _logger.LogTrace("NUT request invalid empty client/server/ids");
+                    _logger.LogDebug("client was empty: {0}", string.IsNullOrEmpty(clientInfo));
+                    _logger.LogDebug("server was empty: {0}", string.IsNullOrEmpty(serverInfo));
+                    _logger.LogDebug("ids was empty: {0}", string.IsNullOrEmpty(idsInfo));
                     return false;
                 }
 
                 var clientParams = GetClientParams();
                 if (!ParseVersions(clientParams["ver"]).Any(clientVersion => SupportedVersions.Contains(clientVersion)))
                 {
+                    _logger.LogTrace("NUT request invalid ver is not a supported version");
                     return false;
                 }
 
+                _logger.LogTrace("NUT request valid message");
                 return true;
             }
+            _logger.LogTrace("NUT request invalid missing client/server/ids");
+            _logger.LogDebug("client was found: {0}", Request.Form.ContainsKey("client"));
+            _logger.LogDebug("server was found: {0}", Request.Form.ContainsKey("server"));
+            _logger.LogDebug("ids was found: {0}", Request.Form.ContainsKey("ids"));
             return false;
         }
 
@@ -140,46 +153,55 @@ namespace SqrlForNet
 
         private Dictionary<string, string> GetClientParams()
         {
+            _logger.LogTrace("Getting cached client params");
             if (_clientParamsCache == null)
             {
                 if (!Request.HasFormContentType)
                 {
                     return new Dictionary<string, string>();
                 }
-
+                _logger.LogTrace("No cached client params updating cache");
                 _clientParamsCache = Encoding.ASCII.GetString(Base64UrlTextEncoder.Decode(Request.Form["client"]))
                     .Replace("\r\n", "\n")
                     .Split('\n')
                     .Where(x => x.Contains("="))
                     .ToDictionary(x => x.Split('=')[0], x => x.Remove(0,x.Split('=')[0].Length + 1));
+                _logger.LogTrace("Client params cache updated");
             }
+            _logger.LogTrace("Returning client params");
             return _clientParamsCache;
         }
 
         private NutValidationResult NutStatus()
         {
+            _logger.LogTrace("Getting status of NUT");
             var nut = Request.Query["nut"];
             var nutInfo = Options.GetNutInternal(nut, false);
 
             if (nutInfo == null)
             {
+                _logger.LogTrace("No NUT info found for NUT: {0}", nut);
                 return NutValidationResult.Expired;
             }
 
             if (nutInfo.CreatedDate.AddSeconds(Options.NutExpiresInSeconds) < DateTime.UtcNow)
             {
+                _logger.LogTrace("NUT has expired as of {0}", nutInfo.CreatedDate.AddSeconds(Options.NutExpiresInSeconds));
                 return NutValidationResult.Expired;
             }
 
             var clientParams = GetClientParams();
             if (clientParams.ContainsKey("opt") && !ParseOpts()[OptKey.noiptest])
             {
+                _logger.LogTrace("Testing IP address");
                 if (nutInfo.IpAddress != Request.HttpContext.Connection.RemoteIpAddress.ToString())
                 {
+                    _logger.LogTrace("IP address failed for {0} expected {1}", Request.HttpContext.Connection.RemoteIpAddress.ToString(), nutInfo.IpAddress);
                     return NutValidationResult.IpMismatch;
                 }
             }
 
+            _logger.LogTrace("NUT is valid");
             return NutValidationResult.Valid;
         }
 
@@ -231,10 +253,12 @@ namespace SqrlForNet
 
         private bool ValidateSignature()
         {
+            _logger.LogTrace("Validating signature of message");
             var message = Request.Form["client"] + Request.Form["server"];
             var ids = Base64UrlTextEncoder.Decode(Request.Form["ids"]);
             var idk = Base64UrlTextEncoder.Decode(GetClientParams()["idk"]);
             var verified = Ed25519.Verify(ids, Encoding.ASCII.GetBytes(message), idk);
+            _logger.LogTrace("Message signature is: {0}", verified);
             return verified;
         }
 
@@ -467,21 +491,25 @@ namespace SqrlForNet
 
         private void BadCommand()
         {
+            _logger.LogInformation("Sending bad command response");
             SendResponse(Tif.FunctionNotSupported | Tif.CommandFailed | Tif.IpMatch);
         }
 
         private void TimingError()
         {
+            _logger.LogInformation("Sending Timing error response");
             SendResponse(Tif.TransientError | Tif.CommandFailed | Tif.IpMatch);
         }
 
         private void BadKeys()
         {
+            _logger.LogInformation("Sending bad key response");
             SendResponse(Tif.CommandFailed | Tif.ClientFailed | Tif.BadId | Tif.IpMatch);
         }
 
         private void BadIp()
         {
+            _logger.LogInformation("Sending bad IP address response");
             SendResponse(Tif.CommandFailed | Tif.ClientFailed | Tif.TransientError);
         }
 
@@ -598,23 +626,38 @@ namespace SqrlForNet
 
         internal void CacheHelperValues()
         {
+            _logger.LogTrace("Updating helpers cache");
             var nut = GenerateNut(Options.EncryptionKey);
             StoreNut(nut);
             var url = $"sqrl://{Request.Host}{Options.CallbackPath}?nut=" + nut;
             var qrCode = GetBase64QrCode(url);
             var checkUrl = $"{Request.Scheme}://{Request.Host}{Options.CallbackPath}?check=" + nut;
+            
+            _logger.LogTrace("Adding values to cache");
+            _logger.LogDebug("The CallbackUrl is: {0}", url);
+            _logger.LogDebug("The CheckMillieSeconds is: {0}", Options.CheckMillieSeconds);
+            _logger.LogDebug("The CheckUrl is: {0}", checkUrl);
+           
+
             Request.HttpContext.Items.Add("CallbackUrl", url);
             Request.HttpContext.Items.Add("QrData", qrCode);
             Request.HttpContext.Items.Add("CheckMillieSeconds", Options.CheckMillieSeconds);
             Request.HttpContext.Items.Add("CheckUrl", checkUrl);
             if (Options.OtherAuthenticationPaths != null && Options.OtherAuthenticationPaths.Any())
             {
+                _logger.LogTrace("There are {0}", nameof(Options.OtherAuthenticationPaths));
                 var otherUrls = new List<OtherUrlsData>();
                 foreach (var optionsOtherAuthenticationPath in Options.OtherAuthenticationPaths)
                 {
+                    _logger.LogDebug("OtherAuthenticationPath: {0}", optionsOtherAuthenticationPath.Path);
+                    _logger.LogDebug("OtherAuthenticationPath is authenticate separately: {0}", optionsOtherAuthenticationPath.AuthenticateSeparately);
+                    
                     var xParam = optionsOtherAuthenticationPath.AuthenticateSeparately ? "x=" + (optionsOtherAuthenticationPath.Path.Length) + "&" : string.Empty;
                     var otherUrl = $"sqrl://{Request.Host}{optionsOtherAuthenticationPath.Path}?{xParam}nut={nut}";
                     var otherCheckUrl = $"{Request.Scheme}://{Request.Host}{optionsOtherAuthenticationPath.Path}?check=" + nut;
+
+                    _logger.LogDebug("The CallbackUrl is: {0}", otherUrl);
+                    _logger.LogDebug("The CheckUrl is: {0}", otherCheckUrl);
 
                     otherUrls.Add(new OtherUrlsData()
                     {
@@ -626,6 +669,7 @@ namespace SqrlForNet
                 }
                 Request.HttpContext.Items.Add("OtherUrls", otherUrls);
             }
+            _logger.LogTrace("Added values to cache");
         }
 
         private string GetBase64QrCode(string url)
@@ -713,7 +757,12 @@ namespace SqrlForNet
 
         private void StoreNut(string nut)
         {
+            _logger.LogTrace("Storing NUT");
+
+            _logger.LogDebug("The NUT been stored is: {0}", nut);
             Options.StoreNutInternal(nut, NewNutInfo(), false);
+
+            _logger.LogTrace("NUT stored");
         }
 
         private NutInfo NewNutInfo()
@@ -774,6 +823,11 @@ namespace SqrlForNet
 
         private Dictionary<OptKey, bool> _optionsCache;
 
+        public SqrlCommandWorker(ILogger logger)
+        {
+            _logger = logger;
+        }
+
         private Dictionary<OptKey, bool> ParseOpts()
         {
             if (_optionsCache == null)
@@ -789,10 +843,12 @@ namespace SqrlForNet
             return _optionsCache;
         }
         
-        public static string GenerateNut(byte[] key)
+        private string GenerateNut(byte[] key)
         {
+            _logger.LogTrace("Generating a NUT");
             var now = DateTime.UtcNow;
             var counter = now.Day.ToString("00") + now.Month.ToString("00") + now.Year.ToString() + now.Ticks.ToString();//This is always be unique as day month and year will always go up and ticks will be unique on the day
+            _logger.LogDebug("Counter is currently {0}", counter);
             var blowFish = new BlowFish(key);
 
             var cipherText = blowFish.EncryptCBC(counter.ToString());
@@ -817,6 +873,8 @@ namespace SqrlForNet
                 Options.HardlockReceivedInternal(GetClientParams()["idk"], Request.HttpContext);
             }
         }
+
+        private ILogger _logger;
 
     }
 }
