@@ -5,7 +5,7 @@ namespace SqrlForNet.Interfaces
 {
     public interface IUserManagementRequiredHooks
     {
-        UserLookUpResult UserExists(string idk, HttpContext context);
+        UserLookUpResult UserExists(string userId, HttpContext context);
 
         void UpdateUserId(string userId, string suk, string vuk, string oldUserId, HttpContext context);
 
@@ -17,13 +17,13 @@ namespace SqrlForNet.Interfaces
 
         void LockUser(string userId, HttpContext context);
 
-        void RemoveUser(string idk, HttpContext context);
+        void RemoveUser(string userId, HttpContext context);
         
     }
 
     public interface IUserManagementRequiredHooksAsync
     {
-        Task<UserLookUpResult> UserExists(string idk, HttpContext context);
+        Task<UserLookUpResult> UserExists(string userId, HttpContext context);
 
         Task UpdateUserId(string userId, string suk, string vuk, string oldUserId, HttpContext context);
 
@@ -35,7 +35,7 @@ namespace SqrlForNet.Interfaces
 
         Task LockUser(string userId, HttpContext context);
 
-        Task RemoveUser(string idk, HttpContext context);
+        Task RemoveUser(string userId, HttpContext context);
 
     }
 
