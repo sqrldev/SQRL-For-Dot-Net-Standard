@@ -133,9 +133,11 @@ namespace SqrlForNet
             var result = Options.GetUserIdByCpsSessionIdInternal(Request.Query["cps"]);
             if (!string.IsNullOrEmpty(result))
             {
+                var username = Options.GetUsernameInternal(result, Context);
+
                 var claims = new[] {
                     new Claim(ClaimTypes.NameIdentifier, result),
-                    new Claim(ClaimTypes.Name, Options.NameForAnonymous)
+                    new Claim(ClaimTypes.Name, username)
                 };
 
                 Options.RemoveCpsSessionIdInternal(Request.Query["cps"]);

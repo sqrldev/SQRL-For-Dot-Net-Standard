@@ -114,7 +114,7 @@ namespace SqrlForNet
             }
             else
             {
-                var task = GetUserVukAsync.Invoke(idk, context);
+                var task = GetUserSukAsync.Invoke(idk, context);
                 task.Wait();
                 return task.Result;
             }
@@ -304,35 +304,35 @@ namespace SqrlForNet
             }
         }
 
-        public Action<string> SqrlOnlyReceived;
+        public Action<string, HttpContext> SqrlOnlyReceived;
 
-        public Func<string, Task> SqrlOnlyReceivedAsync;
+        public Func<string, HttpContext, Task> SqrlOnlyReceivedAsync;
 
-        internal void SqrlOnlyReceivedInternal(string idk)
+        internal void SqrlOnlyReceivedInternal(string idk, HttpContext context)
         {
             if (SqrlOnlyReceived != null)
             {
-                SqrlOnlyReceived.Invoke(idk);
+                SqrlOnlyReceived.Invoke(idk, context);
             }
             else
             {
-                SqrlOnlyReceivedAsync.Invoke(idk).Wait();
+                SqrlOnlyReceivedAsync.Invoke(idk, context).Wait();
             }
         }
 
-        public Action<string> HardlockReceived;
+        public Action<string, HttpContext> HardlockReceived;
 
-        public Func<string, Task> HardlockReceivedAsync;
+        public Func<string, HttpContext, Task> HardlockReceivedAsync;
 
-        internal void HardlockReceivedInternal(string idk)
+        internal void HardlockReceivedInternal(string idk, HttpContext context)
         {
             if (HardlockReceived != null)
             {
-                HardlockReceived.Invoke(idk);
+                HardlockReceived.Invoke(idk, context);
             }
             else
             {
-                HardlockReceivedAsync.Invoke(idk).Wait();
+                HardlockReceivedAsync.Invoke(idk, context).Wait();
             }
         }
 
@@ -371,6 +371,29 @@ namespace SqrlForNet
                 return task.Result;
             }
         }
+
+        public Func<string, HttpContext, string> GetUsername;
+
+        public Func<string, HttpContext, Task<string>> GetUsernameAsync;
+
+        internal string GetUsernameInternal(string userId, HttpContext context)
+        {
+            if (GetUsername != null)
+            {
+                return GetUsername.Invoke(userId, context);
+            }
+            else if (GetUsernameAsync != null)
+            {
+                var task = GetUsernameAsync.Invoke(userId, context);
+                task.Wait();
+                return task.Result;
+            }
+            else
+            {
+                return NameForAnonymous;
+            }
+        }
+
 
         private static readonly Dictionary<string, NutInfo> NutList = new Dictionary<string, NutInfo>();
 
@@ -711,7 +734,12 @@ namespace SqrlForNet
             {
                 throw new ArgumentException($"{nameof(ProcessAskResponse)} and {nameof(ProcessAskResponseAsync)} are both defined you should only define one of them.");
             }
-            
+
+            if (GetUsername != null && GetUsernameAsync != null)
+            {
+                throw new ArgumentException($"{nameof(GetUsername)} and {nameof(GetUsernameAsync)} are both defined you should only define one of them.");
+            }
+
         }
 
         protected internal static readonly List<DiagnosticsInfo> TransactionLog = new List<DiagnosticsInfo>();

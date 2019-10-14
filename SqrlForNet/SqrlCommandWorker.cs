@@ -810,11 +810,11 @@ namespace SqrlForNet
         {
             if (GetClientParams().ContainsKey("opt") && ParseOpts()[OptKey.sqrlonly] && (Options.SqrlOnlyReceived != null || Options.SqrlOnlyReceivedAsync != null))
             {
-                Options.SqrlOnlyReceivedInternal(GetClientParams()["idk"]);
+                Options.SqrlOnlyReceivedInternal(GetClientParams()["idk"], Request.HttpContext);
             }
             if (GetClientParams().ContainsKey("opt") && ParseOpts()[OptKey.hardlock] && (Options.HardlockReceived != null || Options.HardlockReceivedAsync != null))
             {
-                Options.HardlockReceivedInternal(GetClientParams()["idk"]);
+                Options.HardlockReceivedInternal(GetClientParams()["idk"], Request.HttpContext);
             }
         }
 

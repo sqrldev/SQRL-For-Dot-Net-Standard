@@ -29,7 +29,7 @@ namespace SqrlForNet.Interfaces
 
         Task<string> GetUserVuk(string userId, HttpContext context);
 
-        Task GetUserSuk(string userId, HttpContext context);
+        Task<string> GetUserSuk(string userId, HttpContext context);
 
         Task UnlockUser(string userId, HttpContext context);
 
@@ -43,18 +43,23 @@ namespace SqrlForNet.Interfaces
     {
         void CreateUser(string userId, string suk, string vuk, HttpContext context);
 
-        void SqrlOnlyReceived(string userId);
+        void SqrlOnlyReceived(string userId, HttpContext context);
 
-        void HardlockReceived(string userId);
+        void HardlockReceived(string userId, HttpContext context);
+
+        string GetUsername(string userId, HttpContext context);
+
     }
 
     public interface IUserManagementOptionalHooksAsync
     {
         Task CreateUser(string userId, string suk, string vuk, HttpContext context);
 
-        Task SqrlOnlyReceived(string userId);
+        Task SqrlOnlyReceived(string userId, HttpContext context);
 
-        Task HardlockReceived(string userId);
+        Task HardlockReceived(string userId, HttpContext context);
+
+        Task<string> GetUsername(string userId, HttpContext context);
     }
 
 }
