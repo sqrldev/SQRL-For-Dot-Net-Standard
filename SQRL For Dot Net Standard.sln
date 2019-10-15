@@ -17,7 +17,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CustomLoginPageWithHtmlHelp
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HelpersProvidersAndOtherPaths", "Examples\HelpersProvidersAndOtherPaths\HelpersProvidersAndOtherPaths.csproj", "{9C877057-4C85-4EB0-8921-EA54444A37D9}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AskMessage", "Examples\AskMessage\AskMessage.csproj", "{A9D4C9DA-CD79-4B9A-A211-7B03A925E179}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AskMessage", "Examples\AskMessage\AskMessage.csproj", "{A9D4C9DA-CD79-4B9A-A211-7B03A925E179}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WithDatabase", "Examples\WithDatabase\WithDatabase.csproj", "{95638D96-23D4-497B-AD0E-673EFDDCE533}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -53,6 +55,10 @@ Global
 		{A9D4C9DA-CD79-4B9A-A211-7B03A925E179}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A9D4C9DA-CD79-4B9A-A211-7B03A925E179}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A9D4C9DA-CD79-4B9A-A211-7B03A925E179}.Release|Any CPU.Build.0 = Release|Any CPU
+		{95638D96-23D4-497B-AD0E-673EFDDCE533}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{95638D96-23D4-497B-AD0E-673EFDDCE533}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{95638D96-23D4-497B-AD0E-673EFDDCE533}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{95638D96-23D4-497B-AD0E-673EFDDCE533}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -64,6 +70,7 @@ Global
 		{CC326E57-D5CD-4AA2-BEBB-AEA3E5A43222} = {70FA3413-2862-425B-B8A2-D5E1E68822D7}
 		{9C877057-4C85-4EB0-8921-EA54444A37D9} = {70FA3413-2862-425B-B8A2-D5E1E68822D7}
 		{A9D4C9DA-CD79-4B9A-A211-7B03A925E179} = {70FA3413-2862-425B-B8A2-D5E1E68822D7}
+		{95638D96-23D4-497B-AD0E-673EFDDCE533} = {70FA3413-2862-425B-B8A2-D5E1E68822D7}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {AF7F16DE-C09B-4D43-83B7-9D081DD293A1}
