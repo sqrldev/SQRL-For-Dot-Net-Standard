@@ -15,5 +15,8 @@ namespace WithDatabase.Database
         public SqrlUser SqrlUser { get; set; }
 
         public int SqrlUserId { get; set; }
+
+        public string Role { get; set; }
+
     }
 }

@@ -68,6 +68,8 @@ namespace SqrlForNet
 
         private void CommandAction(Command command)
         {
+            _logger.LogTrace("Start processing command {0}", command.ToString());
+            _logger.LogInformation("{0} command sent by SQRL client", command.ToString());
             switch (command)
             {
                 case Command.Query:
@@ -86,9 +88,11 @@ namespace SqrlForNet
                     Remove();
                     break;
                 case Command.Unsupported:
+                    _logger.LogError("Unsupported command ({0}) sent by SQRL client", command.ToString());
                     Unsupported();
                     break;
                 default:
+                    _logger.LogError("Unsupported command ({0}) sent by SQRL client", command.ToString());
                     Unsupported();
                     break;
             }
@@ -233,20 +237,25 @@ namespace SqrlForNet
             {
                 if (GetClientParams().ContainsKey("btn") && (Options.ProcessAskResponse != null || Options.ProcessAskResponseAsync != null))
                 {
+                    _logger.LogInformation("Processing ASK response");
                     if (!int.TryParse(GetClientParams()["btn"], out var buttonValue))
                     {
+                        _logger.LogError("BTN from SQRL client is not an integer");
                         BadCommand();
                     }
                     if (!Options.ProcessAskResponseInternal(Request, Request.Query["nut"], buttonValue))
                     {
+                        _logger.LogWarning("Failed to process ASK response");
                         SendResponse(Tif.IdMatch | Tif.IpMatch);
                         return;
                     }
+                    _logger.LogInformation("Processed ASK response");
                 }
                 CommandAction(GetCommand());
             }
             else
             {
+                _logger.LogError("Failed to validate signature");
                 BadCommand();
             }
         }
@@ -275,15 +284,19 @@ namespace SqrlForNet
 
         private UserLookupResults LookUpUsers(Dictionary<string, string> clientParams)
         {
+            _logger.LogTrace("Started to look up user");
             var idk = clientParams["idk"];
 
             var userExists = Options.UserExistsInternal(idk, Request.HttpContext);
             var prevUserExists = UserLookUpResult.Unknown;
             if (clientParams.ContainsKey("pidk"))
             {
+                _logger.LogTrace("Using PIDK for user look up");
                 var pidk = clientParams["pidk"];
                 prevUserExists = Options.UserExistsInternal(pidk, Request.HttpContext);
             }
+            _logger.LogDebug("User exists: {0}", userExists.ToString());
+            _logger.LogDebug("Prev user exists: {0}", userExists.ToString());
             return new UserLookupResults()
             {
                 UserExists = userExists,
@@ -293,13 +306,16 @@ namespace SqrlForNet
 
         private void Query()
         {
+            _logger.LogTrace("Started processing Query command");
             var clientParams = GetClientParams();
             var userLookUp = LookUpUsers(clientParams);
             QueryHandleUserExists(userLookUp.UserExists, userLookUp.PrevUserExists);
+            _logger.LogTrace("Finished processing Query command");
         }
 
         private void QueryHandleUserExists(UserLookUpResult userExists, UserLookUpResult prevUserExists)
         {
+            _logger.LogTrace("User exists {0} and Prev user exists {1}", userExists, prevUserExists);
             var tifValue = (Tif.IpMatch);
             if (userExists == UserLookUpResult.Exists)
             {
@@ -317,16 +333,19 @@ namespace SqrlForNet
             {
                 tifValue |= Tif.PreviousIdMatch | Tif.SqrlDisabled;
             }
+            _logger.LogInformation("Responding to Query command with {0}", tifValue.ToString("F"));
             SendResponse(tifValue);
         }
 
         private void Ident()
         {
+            _logger.LogTrace("Started processing Ident command");
             var clientParams = GetClientParams();
             var userLookUp = LookUpUsers(clientParams);
 
             if (userLookUp.UserExists == UserLookUpResult.Exists)
             {
+                _logger.LogInformation("Responding to Ident command with valid user identified");
                 SendResponse(Tif.IdMatch | Tif.IpMatch, !AuthorizeNut(Request.Query["nut"]));
             }
             else if (userLookUp.PrevUserExists == UserLookUpResult.Exists)
@@ -341,6 +360,7 @@ namespace SqrlForNet
             {
                 TryCreateNewUser(clientParams);
             }
+            _logger.LogTrace("Finished processing Ident command");
         }
 
         private bool AuthorizeNut(string nut)
@@ -364,22 +384,30 @@ namespace SqrlForNet
 
         private void UpdateOldUser(Dictionary<string, string> clientParams)
         {
+            _logger.LogTrace("Starting to update user details");
             if (!clientParams.ContainsKey("suk") || !clientParams.ContainsKey("vuk"))
             {
+                _logger.LogTrace("Missing SUK or VUK in request");
+                _logger.LogDebug("Missing SUK: {0}", !clientParams.ContainsKey("suk"));
+                _logger.LogDebug("Missing VUK: {0}", !clientParams.ContainsKey("vuk"));
                 SendResponse(Tif.IpMatch | Tif.CommandFailed | Tif.ClientFailed);
             }
             else
             {
                 var idk = clientParams["idk"];
                 Options.UpdateUserIdInternal(idk, clientParams["suk"], clientParams["vuk"], clientParams["pidk"], Request.HttpContext);
+                _logger.LogTrace("Updated user details and responding to client as valid identified user");
                 SendResponse(Tif.IdMatch | Tif.IpMatch, !AuthorizeNut(Request.Query["nut"]));
             }
+            _logger.LogTrace("Finished to update user details");
         }
 
         private void TryUnlockUser(Dictionary<string, string> clientParams)
         {
+            _logger.LogTrace("Starting to unlock user");
             if (!Request.Form.ContainsKey("urs"))
             {
+                _logger.LogError("Missing URS from unlock request");
                 SendResponse(Tif.IpMatch | Tif.IdMatch | Tif.CommandFailed | Tif.ClientFailed);
                 return;
             }
@@ -393,18 +421,26 @@ namespace SqrlForNet
 
             if (!valid)
             {
+                _logger.LogError("Invalid URS to unlock user.");
+                _logger.LogDebug("Message to validate: {0}", Request.Form["client"] + Request.Form["server"]);
+                _logger.LogDebug("VUK stored on server: {0}", Options.GetUserVukInternal(idk, Request.HttpContext));
+                _logger.LogDebug("URS sent by client: {0}", Request.Form["urs"]);
                 SendResponse(Tif.IdMatch | Tif.IpMatch | Tif.CommandFailed | Tif.ClientFailed);
                 return;
             }
 
             Options.UnlockUserInternal(idk, Request.HttpContext);
+            _logger.LogInformation("Unlocked user {0}", idk);
+            _logger.LogTrace("Unlocked user and responding to client as valid identified user");
             SendResponse(Tif.IdMatch | Tif.IpMatch, !AuthorizeNut(Request.Query["nut"]));
         }
 
         private void TryRemoveUser(Dictionary<string, string> clientParams)
         {
+            _logger.LogTrace("Starting to try and remove user");
             if (!Request.Form.ContainsKey("urs"))
             {
+                _logger.LogError("Missing URS in request to remove user");
                 SendResponse(Tif.IpMatch | Tif.IdMatch | Tif.CommandFailed | Tif.ClientFailed);
                 return;
             }
@@ -418,46 +454,62 @@ namespace SqrlForNet
 
             if (!valid)
             {
+                _logger.LogError("Invalid URS to unlock user.");
+                _logger.LogDebug("Message to validate: {0}", Request.Form["client"] + Request.Form["server"]);
+                _logger.LogDebug("VUK stored on server: {0}", Options.GetUserVukInternal(idk, Request.HttpContext));
+                _logger.LogDebug("URS sent by client: {0}", Request.Form["urs"]);
                 SendResponse(Tif.IpMatch | Tif.CommandFailed | Tif.ClientFailed);
                 return;
             }
 
             Options.RemoveUserInternal(idk, Request.HttpContext);
+            _logger.LogInformation("Remove user {0}", idk);
+            _logger.LogTrace("Remove user and responding to client as valid identified user");
             SendResponse(Tif.IdMatch | Tif.IpMatch, !AuthorizeNut(Request.Query["nut"]));
         }
 
         private void TryCreateNewUser(Dictionary<string, string> clientParams)
         {
+            _logger.LogTrace("Starting to try and create a user");
             if (Options.CreateUser != null || Options.CreateUserAsync != null)
             {
+                _logger.LogTrace("Creating users enabled on server");
                 var idk = clientParams["idk"];
                 Options.CreateUserInternal(idk, clientParams["suk"], clientParams["vuk"], Request.HttpContext);
+                _logger.LogInformation("Created user {0}", idk);
+                _logger.LogTrace("Created user and responding to client as valid identified user");
                 SendResponse(Tif.IdMatch | Tif.IpMatch, !AuthorizeNut(Request.Query["nut"]));
             }
             else
             {
+                _logger.LogTrace("Creating users is disabled by the server");
                 SendResponse(Tif.IpMatch | Tif.FunctionNotSupported);
             }
         }
 
         private void Disable()
         {
+            _logger.LogTrace("Started processing Disable command");
             var clientParams = GetClientParams();
             var userLookUp = LookUpUsers(clientParams);
             if (userLookUp.UserExists == UserLookUpResult.Exists)
             {
                 var idk = clientParams["idk"];
                 Options.LockUserInternal(idk, Request.HttpContext);
+                _logger.LogTrace("Disabled the user {0} responding to client", idk);
                 SendResponse(Tif.IdMatch | Tif.IpMatch | Tif.SqrlDisabled);
             }
             else
             {
+                _logger.LogWarning("Attempted to disable a user that was {0}", userLookUp.UserExists.ToString());
                 Unsupported();
             }
+            _logger.LogTrace("Finished processing Disable command");
         }
 
         private void Enable()
         {
+            _logger.LogTrace("Started processing Enable command");
             var clientParams = GetClientParams();
             var userLookUp = LookUpUsers(clientParams);
             if (userLookUp.UserExists == UserLookUpResult.Disabled)
@@ -466,12 +518,15 @@ namespace SqrlForNet
             }
             else
             {
+                _logger.LogWarning("Attempted to enable a user that was {0}", userLookUp.UserExists.ToString());
                 Unsupported();
             }
+            _logger.LogTrace("Finished processing Enable command");
         }
 
         private void Remove()
         {
+            _logger.LogTrace("Started processing Remove command");
             var clientParams = GetClientParams();
             var userLookUp = LookUpUsers(clientParams);
             if (userLookUp.UserExists == UserLookUpResult.Exists || userLookUp.UserExists == UserLookUpResult.Disabled)
@@ -480,8 +535,10 @@ namespace SqrlForNet
             }
             else
             {
+                _logger.LogWarning("Attempted to remove a user that was {0}", userLookUp.UserExists.ToString());
                 Unsupported();
             }
+            _logger.LogTrace("Finished processing Remove command");
         }
 
         private void Unsupported()

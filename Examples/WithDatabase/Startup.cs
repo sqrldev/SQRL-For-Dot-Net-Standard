@@ -38,6 +38,7 @@ namespace WithDatabase
                 })
                 .AddSqrl(options =>
                 {
+                    options.CheckMillieSeconds = 10000;
                     options.CreateUserAsync = new SqrlManager().CreateUser;
                     options.UserExistsAsync = new SqrlManager().UserExists;
                     options.UpdateUserIdAsync = new SqrlManager().UpdateUserId;
@@ -47,6 +48,7 @@ namespace WithDatabase
                     options.GetUserVukAsync = new SqrlManager().GetUserVuk;
                     options.GetUserSukAsync = new SqrlManager().GetUserSuk;
                     options.GetUsernameAsync = new SqrlManager().GetUsername;
+                    options.Events.OnTicketReceived += OnTicketReceived;
                 });
             var connectionString = Configuration.GetConnectionString("DatabaseContext");
             if (string.IsNullOrEmpty(connectionString))
@@ -68,7 +70,7 @@ namespace WithDatabase
 
             var claims = new List<Claim>
             {
-                new Claim(ClaimTypes.Name, user.Username)
+                new Claim(ClaimTypes.Role, user.Role)
             };
             var appIdentity = new ClaimsIdentity(claims);
             context.Principal.AddIdentity(appIdentity);

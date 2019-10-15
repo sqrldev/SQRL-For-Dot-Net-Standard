@@ -16,8 +16,6 @@ namespace SqrlForNet
 
         internal SqrlCommandWorker CommandWorker;
 
-        internal ILogger Logger;
-
         public SqrlAuthenticationHandler(
             IOptionsMonitor<SqrlAuthenticationOptions> options,
             ILoggerFactory logger,
@@ -25,7 +23,6 @@ namespace SqrlForNet
             ISystemClock clock) :
             base(options, logger, encoder, clock)
         {
-            Logger = logger.CreateLogger("SQRLForNet");
             CommandWorker = new SqrlCommandWorker(Logger);
         }
 
@@ -127,11 +124,15 @@ namespace SqrlForNet
             var result = CommandWorker.CheckPage();
             if (result)
             {
+                Logger.LogTrace("User is authorized and can be logged in");
+                var userId = Options.GetNutIdkInternal(Request.Query["check"]);
+                var username = Options.GetUsernameInternal(userId, Context);
                 var claims = new[] {
-                    new Claim(ClaimTypes.NameIdentifier, Options.GetNutIdkInternal(Request.Query["check"])),
-                    new Claim(ClaimTypes.Name, Options.NameForAnonymous)
+                    new Claim(ClaimTypes.NameIdentifier, userId),
+                    new Claim(ClaimTypes.Name, username)
                 };
-
+                Logger.LogDebug("The userId is: {0}", userId);
+                Logger.LogDebug("The username is: {0}", username);
                 Options.RemoveNutInternal(Request.Query["check"], true);
 
                 var identity = new ClaimsIdentity(claims, Scheme.Name);
@@ -162,9 +163,7 @@ namespace SqrlForNet
                 var identity = new ClaimsIdentity(claims, Scheme.Name);
                 var principal = new ClaimsPrincipal(identity);
                 var ticket = new AuthenticationTicket(principal, Scheme.Name);
-
-                Options.Events.TicketReceived(new TicketReceivedContext(Context, Scheme, Options, ticket));
-
+                
                 return Task.FromResult(HandleRequestResult.Success(ticket));
             }
             //We are specifically not returning any body in the response here as they clearly don't have a valid purpose to be here
