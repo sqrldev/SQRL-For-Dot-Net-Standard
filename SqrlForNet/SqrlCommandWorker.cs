@@ -7,6 +7,7 @@ using System.Text;
 using Elskom.Generic.Libs;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.WebUtilities;
+using Microsoft.Extensions.Logging;
 using Net.Codecrete.QrCodeGenerator;
 using SqrlForNet.Chaos.NaCl;
 
@@ -67,6 +68,8 @@ namespace SqrlForNet
 
         private void CommandAction(Command command)
         {
+            _logger.LogTrace("Start processing command {0}", command.ToString());
+            _logger.LogInformation("{0} command sent by SQRL client", command.ToString());
             switch (command)
             {
                 case Command.Query:
@@ -85,9 +88,11 @@ namespace SqrlForNet
                     Remove();
                     break;
                 case Command.Unsupported:
+                    _logger.LogError("Unsupported command ({0}) sent by SQRL client", command.ToString());
                     Unsupported();
                     break;
                 default:
+                    _logger.LogError("Unsupported command ({0}) sent by SQRL client", command.ToString());
                     Unsupported();
                     break;
             }
@@ -98,6 +103,7 @@ namespace SqrlForNet
         /// </summary>
         public void NutRequest()
         {
+            _logger.LogTrace("Started to validate NUT request");
             if (IsValidNutRequest())
             {
                 NutValidationMessage(NutStatus());
@@ -106,7 +112,8 @@ namespace SqrlForNet
             {
                 BadCommand();
             }
-            Options.RemoveNut.Invoke(Request.Query["nut"], false);
+            _logger.LogTrace("Removing NUT: {0}", Request.Query["nut"]);
+            Options.RemoveNutInternal(Request.Query["nut"], false);
         }
 
         private bool IsValidNutRequest()
@@ -122,17 +129,27 @@ namespace SqrlForNet
                     string.IsNullOrEmpty(serverInfo) ||
                     string.IsNullOrEmpty(idsInfo))
                 {
+                    _logger.LogTrace("NUT request invalid empty client/server/ids");
+                    _logger.LogDebug("client was empty: {0}", string.IsNullOrEmpty(clientInfo));
+                    _logger.LogDebug("server was empty: {0}", string.IsNullOrEmpty(serverInfo));
+                    _logger.LogDebug("ids was empty: {0}", string.IsNullOrEmpty(idsInfo));
                     return false;
                 }
 
                 var clientParams = GetClientParams();
                 if (!ParseVersions(clientParams["ver"]).Any(clientVersion => SupportedVersions.Contains(clientVersion)))
                 {
+                    _logger.LogTrace("NUT request invalid ver is not a supported version");
                     return false;
                 }
 
+                _logger.LogTrace("NUT request valid message");
                 return true;
             }
+            _logger.LogTrace("NUT request invalid missing client/server/ids");
+            _logger.LogDebug("client was found: {0}", Request.Form.ContainsKey("client"));
+            _logger.LogDebug("server was found: {0}", Request.Form.ContainsKey("server"));
+            _logger.LogDebug("ids was found: {0}", Request.Form.ContainsKey("ids"));
             return false;
         }
 
@@ -140,46 +157,55 @@ namespace SqrlForNet
 
         private Dictionary<string, string> GetClientParams()
         {
+            _logger.LogTrace("Getting cached client params");
             if (_clientParamsCache == null)
             {
                 if (!Request.HasFormContentType)
                 {
                     return new Dictionary<string, string>();
                 }
-
+                _logger.LogTrace("No cached client params updating cache");
                 _clientParamsCache = Encoding.ASCII.GetString(Base64UrlTextEncoder.Decode(Request.Form["client"]))
                     .Replace("\r\n", "\n")
                     .Split('\n')
                     .Where(x => x.Contains("="))
                     .ToDictionary(x => x.Split('=')[0], x => x.Remove(0,x.Split('=')[0].Length + 1));
+                _logger.LogTrace("Client params cache updated");
             }
+            _logger.LogTrace("Returning client params");
             return _clientParamsCache;
         }
 
         private NutValidationResult NutStatus()
         {
+            _logger.LogTrace("Getting status of NUT");
             var nut = Request.Query["nut"];
-            var nutInfo = Options.GetNut.Invoke(nut, false);
+            var nutInfo = Options.GetNutInternal(nut, false);
 
             if (nutInfo == null)
             {
+                _logger.LogTrace("No NUT info found for NUT: {0}", nut);
                 return NutValidationResult.Expired;
             }
 
             if (nutInfo.CreatedDate.AddSeconds(Options.NutExpiresInSeconds) < DateTime.UtcNow)
             {
+                _logger.LogTrace("NUT has expired as of {0}", nutInfo.CreatedDate.AddSeconds(Options.NutExpiresInSeconds));
                 return NutValidationResult.Expired;
             }
 
             var clientParams = GetClientParams();
             if (clientParams.ContainsKey("opt") && !ParseOpts()[OptKey.noiptest])
             {
+                _logger.LogTrace("Testing IP address");
                 if (nutInfo.IpAddress != Request.HttpContext.Connection.RemoteIpAddress.ToString())
                 {
+                    _logger.LogTrace("IP address failed for {0} expected {1}", Request.HttpContext.Connection.RemoteIpAddress.ToString(), nutInfo.IpAddress);
                     return NutValidationResult.IpMismatch;
                 }
             }
 
+            _logger.LogTrace("NUT is valid");
             return NutValidationResult.Valid;
         }
 
@@ -209,32 +235,39 @@ namespace SqrlForNet
         {
             if (ValidateSignature())
             {
-                if (GetClientParams().ContainsKey("btn"))
+                if (GetClientParams().ContainsKey("btn") && (Options.ProcessAskResponse != null || Options.ProcessAskResponseAsync != null))
                 {
+                    _logger.LogInformation("Processing ASK response");
                     if (!int.TryParse(GetClientParams()["btn"], out var buttonValue))
                     {
+                        _logger.LogError("BTN from SQRL client is not an integer");
                         BadCommand();
                     }
-                    if (!Options.ProcessAskResponse.Invoke(Request, Request.Query["nut"], buttonValue))
+                    if (!Options.ProcessAskResponseInternal(Request, Request.Query["nut"], buttonValue))
                     {
+                        _logger.LogWarning("Failed to process ASK response");
                         SendResponse(Tif.IdMatch | Tif.IpMatch);
                         return;
                     }
+                    _logger.LogInformation("Processed ASK response");
                 }
                 CommandAction(GetCommand());
             }
             else
             {
+                _logger.LogError("Failed to validate signature");
                 BadCommand();
             }
         }
 
         private bool ValidateSignature()
         {
+            _logger.LogTrace("Validating signature of message");
             var message = Request.Form["client"] + Request.Form["server"];
             var ids = Base64UrlTextEncoder.Decode(Request.Form["ids"]);
             var idk = Base64UrlTextEncoder.Decode(GetClientParams()["idk"]);
             var verified = Ed25519.Verify(ids, Encoding.ASCII.GetBytes(message), idk);
+            _logger.LogTrace("Message signature is: {0}", verified);
             return verified;
         }
 
@@ -251,15 +284,19 @@ namespace SqrlForNet
 
         private UserLookupResults LookUpUsers(Dictionary<string, string> clientParams)
         {
+            _logger.LogTrace("Started to look up user");
             var idk = clientParams["idk"];
 
-            var userExists = Options.UserExists.Invoke(idk, Request.HttpContext);
+            var userExists = Options.UserExistsInternal(idk, Request.HttpContext);
             var prevUserExists = UserLookUpResult.Unknown;
             if (clientParams.ContainsKey("pidk"))
             {
+                _logger.LogTrace("Using PIDK for user look up");
                 var pidk = clientParams["pidk"];
-                prevUserExists = Options.UserExists.Invoke(pidk, Request.HttpContext);
+                prevUserExists = Options.UserExistsInternal(pidk, Request.HttpContext);
             }
+            _logger.LogDebug("User exists: {0}", userExists.ToString());
+            _logger.LogDebug("Prev user exists: {0}", userExists.ToString());
             return new UserLookupResults()
             {
                 UserExists = userExists,
@@ -269,13 +306,16 @@ namespace SqrlForNet
 
         private void Query()
         {
+            _logger.LogTrace("Started processing Query command");
             var clientParams = GetClientParams();
             var userLookUp = LookUpUsers(clientParams);
             QueryHandleUserExists(userLookUp.UserExists, userLookUp.PrevUserExists);
+            _logger.LogTrace("Finished processing Query command");
         }
 
         private void QueryHandleUserExists(UserLookUpResult userExists, UserLookUpResult prevUserExists)
         {
+            _logger.LogTrace("User exists {0} and Prev user exists {1}", userExists, prevUserExists);
             var tifValue = (Tif.IpMatch);
             if (userExists == UserLookUpResult.Exists)
             {
@@ -293,16 +333,19 @@ namespace SqrlForNet
             {
                 tifValue |= Tif.PreviousIdMatch | Tif.SqrlDisabled;
             }
+            _logger.LogInformation("Responding to Query command with {0}", tifValue.ToString("F"));
             SendResponse(tifValue);
         }
 
         private void Ident()
         {
+            _logger.LogTrace("Started processing Ident command");
             var clientParams = GetClientParams();
             var userLookUp = LookUpUsers(clientParams);
 
             if (userLookUp.UserExists == UserLookUpResult.Exists)
             {
+                _logger.LogInformation("Responding to Ident command with valid user identified");
                 SendResponse(Tif.IdMatch | Tif.IpMatch, !AuthorizeNut(Request.Query["nut"]));
             }
             else if (userLookUp.PrevUserExists == UserLookUpResult.Exists)
@@ -317,6 +360,7 @@ namespace SqrlForNet
             {
                 TryCreateNewUser(clientParams);
             }
+            _logger.LogTrace("Finished processing Ident command");
         }
 
         private bool AuthorizeNut(string nut)
@@ -324,7 +368,7 @@ namespace SqrlForNet
             var opts = ParseOpts();
             if (!opts[OptKey.cps])
             {
-                var nutInfo = Options.GetNut.Invoke(nut, false);
+                var nutInfo = Options.GetNutInternal(nut, false);
                 var authNutInfo = new NutInfo
                 {
                     FirstNut = nutInfo.FirstNut,
@@ -332,7 +376,7 @@ namespace SqrlForNet
                     IpAddress = nutInfo.IpAddress,
                     Idk = nutInfo.Idk
                 };
-                Options.StoreNut.Invoke(nut, authNutInfo, true);
+                Options.StoreNutInternal(nut, authNutInfo, true);
                 return true;
             }
             return false;
@@ -340,22 +384,30 @@ namespace SqrlForNet
 
         private void UpdateOldUser(Dictionary<string, string> clientParams)
         {
+            _logger.LogTrace("Starting to update user details");
             if (!clientParams.ContainsKey("suk") || !clientParams.ContainsKey("vuk"))
             {
+                _logger.LogTrace("Missing SUK or VUK in request");
+                _logger.LogDebug("Missing SUK: {0}", !clientParams.ContainsKey("suk"));
+                _logger.LogDebug("Missing VUK: {0}", !clientParams.ContainsKey("vuk"));
                 SendResponse(Tif.IpMatch | Tif.CommandFailed | Tif.ClientFailed);
             }
             else
             {
                 var idk = clientParams["idk"];
-                Options.UpdateUserId.Invoke(idk, clientParams["suk"], clientParams["vuk"], clientParams["pidk"], Request.HttpContext);
+                Options.UpdateUserIdInternal(idk, clientParams["suk"], clientParams["vuk"], clientParams["pidk"], Request.HttpContext);
+                _logger.LogTrace("Updated user details and responding to client as valid identified user");
                 SendResponse(Tif.IdMatch | Tif.IpMatch, !AuthorizeNut(Request.Query["nut"]));
             }
+            _logger.LogTrace("Finished to update user details");
         }
 
         private void TryUnlockUser(Dictionary<string, string> clientParams)
         {
+            _logger.LogTrace("Starting to unlock user");
             if (!Request.Form.ContainsKey("urs"))
             {
+                _logger.LogError("Missing URS from unlock request");
                 SendResponse(Tif.IpMatch | Tif.IdMatch | Tif.CommandFailed | Tif.ClientFailed);
                 return;
             }
@@ -363,24 +415,32 @@ namespace SqrlForNet
             var idk = clientParams["idk"];
 
             var message = Encoding.ASCII.GetBytes(Request.Form["client"] + Request.Form["server"]);
-            var usersVuk = Base64UrlTextEncoder.Decode(Options.GetUserVuk.Invoke(idk, Request.HttpContext));
+            var usersVuk = Base64UrlTextEncoder.Decode(Options.GetUserVukInternal(idk, Request.HttpContext));
             var urs = Base64UrlTextEncoder.Decode(Request.Form["urs"]);
             var valid = Ed25519.Verify(urs, message, usersVuk);
 
             if (!valid)
             {
+                _logger.LogError("Invalid URS to unlock user.");
+                _logger.LogDebug("Message to validate: {0}", Request.Form["client"] + Request.Form["server"]);
+                _logger.LogDebug("VUK stored on server: {0}", Options.GetUserVukInternal(idk, Request.HttpContext));
+                _logger.LogDebug("URS sent by client: {0}", Request.Form["urs"]);
                 SendResponse(Tif.IdMatch | Tif.IpMatch | Tif.CommandFailed | Tif.ClientFailed);
                 return;
             }
 
-            Options.UnlockUser.Invoke(idk, Request.HttpContext);
+            Options.UnlockUserInternal(idk, Request.HttpContext);
+            _logger.LogInformation("Unlocked user {0}", idk);
+            _logger.LogTrace("Unlocked user and responding to client as valid identified user");
             SendResponse(Tif.IdMatch | Tif.IpMatch, !AuthorizeNut(Request.Query["nut"]));
         }
 
         private void TryRemoveUser(Dictionary<string, string> clientParams)
         {
+            _logger.LogTrace("Starting to try and remove user");
             if (!Request.Form.ContainsKey("urs"))
             {
+                _logger.LogError("Missing URS in request to remove user");
                 SendResponse(Tif.IpMatch | Tif.IdMatch | Tif.CommandFailed | Tif.ClientFailed);
                 return;
             }
@@ -388,52 +448,68 @@ namespace SqrlForNet
             var idk = clientParams["idk"];
 
             var message = Encoding.ASCII.GetBytes(Request.Form["client"] + Request.Form["server"]);
-            var usersVuk = Base64UrlTextEncoder.Decode(Options.GetUserVuk.Invoke(idk, Request.HttpContext));
+            var usersVuk = Base64UrlTextEncoder.Decode(Options.GetUserVukInternal(idk, Request.HttpContext));
             var urs = Base64UrlTextEncoder.Decode(Request.Form["urs"]);
             var valid = Ed25519.Verify(urs, message, usersVuk);
 
             if (!valid)
             {
+                _logger.LogError("Invalid URS to unlock user.");
+                _logger.LogDebug("Message to validate: {0}", Request.Form["client"] + Request.Form["server"]);
+                _logger.LogDebug("VUK stored on server: {0}", Options.GetUserVukInternal(idk, Request.HttpContext));
+                _logger.LogDebug("URS sent by client: {0}", Request.Form["urs"]);
                 SendResponse(Tif.IpMatch | Tif.CommandFailed | Tif.ClientFailed);
                 return;
             }
 
-            Options.RemoveUser.Invoke(idk, Request.HttpContext);
+            Options.RemoveUserInternal(idk, Request.HttpContext);
+            _logger.LogInformation("Remove user {0}", idk);
+            _logger.LogTrace("Remove user and responding to client as valid identified user");
             SendResponse(Tif.IdMatch | Tif.IpMatch, !AuthorizeNut(Request.Query["nut"]));
         }
 
         private void TryCreateNewUser(Dictionary<string, string> clientParams)
         {
-            if (Options.CreateUser != null)
+            _logger.LogTrace("Starting to try and create a user");
+            if (Options.CreateUser != null || Options.CreateUserAsync != null)
             {
+                _logger.LogTrace("Creating users enabled on server");
                 var idk = clientParams["idk"];
-                Options.CreateUser.Invoke(idk, clientParams["suk"], clientParams["vuk"], Request.HttpContext);
+                Options.CreateUserInternal(idk, clientParams["suk"], clientParams["vuk"], Request.HttpContext);
+                _logger.LogInformation("Created user {0}", idk);
+                _logger.LogTrace("Created user and responding to client as valid identified user");
                 SendResponse(Tif.IdMatch | Tif.IpMatch, !AuthorizeNut(Request.Query["nut"]));
             }
             else
             {
+                _logger.LogTrace("Creating users is disabled by the server");
                 SendResponse(Tif.IpMatch | Tif.FunctionNotSupported);
             }
         }
 
         private void Disable()
         {
+            _logger.LogTrace("Started processing Disable command");
             var clientParams = GetClientParams();
             var userLookUp = LookUpUsers(clientParams);
             if (userLookUp.UserExists == UserLookUpResult.Exists)
             {
                 var idk = clientParams["idk"];
-                Options.LockUser.Invoke(idk, Request.HttpContext);
+                Options.LockUserInternal(idk, Request.HttpContext);
+                _logger.LogTrace("Disabled the user {0} responding to client", idk);
                 SendResponse(Tif.IdMatch | Tif.IpMatch | Tif.SqrlDisabled);
             }
             else
             {
+                _logger.LogWarning("Attempted to disable a user that was {0}", userLookUp.UserExists.ToString());
                 Unsupported();
             }
+            _logger.LogTrace("Finished processing Disable command");
         }
 
         private void Enable()
         {
+            _logger.LogTrace("Started processing Enable command");
             var clientParams = GetClientParams();
             var userLookUp = LookUpUsers(clientParams);
             if (userLookUp.UserExists == UserLookUpResult.Disabled)
@@ -442,12 +518,15 @@ namespace SqrlForNet
             }
             else
             {
+                _logger.LogWarning("Attempted to enable a user that was {0}", userLookUp.UserExists.ToString());
                 Unsupported();
             }
+            _logger.LogTrace("Finished processing Enable command");
         }
 
         private void Remove()
         {
+            _logger.LogTrace("Started processing Remove command");
             var clientParams = GetClientParams();
             var userLookUp = LookUpUsers(clientParams);
             if (userLookUp.UserExists == UserLookUpResult.Exists || userLookUp.UserExists == UserLookUpResult.Disabled)
@@ -456,8 +535,10 @@ namespace SqrlForNet
             }
             else
             {
+                _logger.LogWarning("Attempted to remove a user that was {0}", userLookUp.UserExists.ToString());
                 Unsupported();
             }
+            _logger.LogTrace("Finished processing Remove command");
         }
 
         private void Unsupported()
@@ -467,21 +548,25 @@ namespace SqrlForNet
 
         private void BadCommand()
         {
+            _logger.LogInformation("Sending bad command response");
             SendResponse(Tif.FunctionNotSupported | Tif.CommandFailed | Tif.IpMatch);
         }
 
         private void TimingError()
         {
+            _logger.LogInformation("Sending Timing error response");
             SendResponse(Tif.TransientError | Tif.CommandFailed | Tif.IpMatch);
         }
 
         private void BadKeys()
         {
+            _logger.LogInformation("Sending bad key response");
             SendResponse(Tif.CommandFailed | Tif.ClientFailed | Tif.BadId | Tif.IpMatch);
         }
 
         private void BadIp()
         {
+            _logger.LogInformation("Sending bad IP address response");
             SendResponse(Tif.CommandFailed | Tif.ClientFailed | Tif.TransientError);
         }
 
@@ -598,23 +683,38 @@ namespace SqrlForNet
 
         internal void CacheHelperValues()
         {
+            _logger.LogTrace("Updating helpers cache");
             var nut = GenerateNut(Options.EncryptionKey);
             StoreNut(nut);
             var url = $"sqrl://{Request.Host}{Options.CallbackPath}?nut=" + nut;
             var qrCode = GetBase64QrCode(url);
             var checkUrl = $"{Request.Scheme}://{Request.Host}{Options.CallbackPath}?check=" + nut;
+            
+            _logger.LogTrace("Adding values to cache");
+            _logger.LogDebug("The CallbackUrl is: {0}", url);
+            _logger.LogDebug("The CheckMillieSeconds is: {0}", Options.CheckMillieSeconds);
+            _logger.LogDebug("The CheckUrl is: {0}", checkUrl);
+           
+
             Request.HttpContext.Items.Add("CallbackUrl", url);
             Request.HttpContext.Items.Add("QrData", qrCode);
             Request.HttpContext.Items.Add("CheckMillieSeconds", Options.CheckMillieSeconds);
             Request.HttpContext.Items.Add("CheckUrl", checkUrl);
             if (Options.OtherAuthenticationPaths != null && Options.OtherAuthenticationPaths.Any())
             {
+                _logger.LogTrace("There are {0}", nameof(Options.OtherAuthenticationPaths));
                 var otherUrls = new List<OtherUrlsData>();
                 foreach (var optionsOtherAuthenticationPath in Options.OtherAuthenticationPaths)
                 {
+                    _logger.LogDebug("OtherAuthenticationPath: {0}", optionsOtherAuthenticationPath.Path);
+                    _logger.LogDebug("OtherAuthenticationPath is authenticate separately: {0}", optionsOtherAuthenticationPath.AuthenticateSeparately);
+                    
                     var xParam = optionsOtherAuthenticationPath.AuthenticateSeparately ? "x=" + (optionsOtherAuthenticationPath.Path.Length) + "&" : string.Empty;
                     var otherUrl = $"sqrl://{Request.Host}{optionsOtherAuthenticationPath.Path}?{xParam}nut={nut}";
                     var otherCheckUrl = $"{Request.Scheme}://{Request.Host}{optionsOtherAuthenticationPath.Path}?check=" + nut;
+
+                    _logger.LogDebug("The CallbackUrl is: {0}", otherUrl);
+                    _logger.LogDebug("The CheckUrl is: {0}", otherCheckUrl);
 
                     otherUrls.Add(new OtherUrlsData()
                     {
@@ -626,6 +726,7 @@ namespace SqrlForNet
                 }
                 Request.HttpContext.Items.Add("OtherUrls", otherUrls);
             }
+            _logger.LogTrace("Added values to cache");
         }
 
         private string GetBase64QrCode(string url)
@@ -646,7 +747,7 @@ namespace SqrlForNet
         {
             var checkNut = Request.Query["check"];
 
-            var isAuthorized = Options.CheckNutAuthorized.Invoke(checkNut);
+            var isAuthorized = Options.CheckNutAuthorizedInternal(checkNut);
             if (!isAuthorized)
             {
                 var responseMessage = new StringBuilder();
@@ -678,7 +779,7 @@ namespace SqrlForNet
             if ((tifValue.HasFlag(Tif.IdMatch) || tifValue.HasFlag(Tif.PreviousIdMatch) || tifValue.HasFlag(Tif.SqrlDisabled)))
             {
                 var idk = GetClientParams()["idk"];
-                var suk = Options.GetUserSuk.Invoke(idk, Request.HttpContext);
+                var suk = Options.GetUserSukInternal(idk, Request.HttpContext);
                 responseMessageBuilder.AppendLine("suk=" + Base64UrlTextEncoder.Encode(Encoding.ASCII.GetBytes(suk)));
             }
 
@@ -689,9 +790,9 @@ namespace SqrlForNet
                 NoneQueryOptionHandling();
             }
 
-            if (GetCommand() == Command.Query && tifValue.HasFlag(Tif.IdMatch) && Options.GetAskQuestion != null)
+            if (GetCommand() == Command.Query && tifValue.HasFlag(Tif.IdMatch) && (Options.GetAskQuestion != null || Options.GetAskQuestionAsync != null))
             {
-                var message = Options.GetAskQuestion.Invoke(Request, nut);
+                var message = Options.GetAskQuestionInternal(Request, nut);
                 if (message != null)
                 {
                     responseMessageBuilder.AppendLine($"ask={message.ToAskMessage()}");
@@ -713,7 +814,12 @@ namespace SqrlForNet
 
         private void StoreNut(string nut)
         {
-            Options.StoreNut.Invoke(nut, NewNutInfo(), false);
+            _logger.LogTrace("Storing NUT");
+
+            _logger.LogDebug("The NUT been stored is: {0}", nut);
+            Options.StoreNutInternal(nut, NewNutInfo(), false);
+
+            _logger.LogTrace("NUT stored");
         }
 
         private NutInfo NewNutInfo()
@@ -721,7 +827,7 @@ namespace SqrlForNet
             NutInfo currentNut = null;
             if (Request.Query.ContainsKey("nut"))
             {
-                currentNut = Options.GetNut.Invoke(Request.Query["nut"], false);
+                currentNut = Options.GetNutInternal(Request.Query["nut"], false);
             }
             return new NutInfo
             {
@@ -774,6 +880,11 @@ namespace SqrlForNet
 
         private Dictionary<OptKey, bool> _optionsCache;
 
+        public SqrlCommandWorker(ILogger logger)
+        {
+            _logger = logger;
+        }
+
         private Dictionary<OptKey, bool> ParseOpts()
         {
             if (_optionsCache == null)
@@ -789,10 +900,12 @@ namespace SqrlForNet
             return _optionsCache;
         }
         
-        public static string GenerateNut(byte[] key)
+        private string GenerateNut(byte[] key)
         {
+            _logger.LogTrace("Generating a NUT");
             var now = DateTime.UtcNow;
             var counter = now.Day.ToString("00") + now.Month.ToString("00") + now.Year.ToString() + now.Ticks.ToString();//This is always be unique as day month and year will always go up and ticks will be unique on the day
+            _logger.LogDebug("Counter is currently {0}", counter);
             var blowFish = new BlowFish(key);
 
             var cipherText = blowFish.EncryptCBC(counter.ToString());
@@ -802,21 +915,23 @@ namespace SqrlForNet
         public string GenerateCpsCode()
         {
             var code = Guid.NewGuid().ToString("N");
-            Options.StoreCpsSessionId.Invoke(code, GetClientParams()["idk"]);
+            Options.StoreCpsSessionIdInternal(code, GetClientParams()["idk"]);
             return code;
         }
 
         private void NoneQueryOptionHandling()
         {
-            if (GetClientParams().ContainsKey("opt") && ParseOpts()[OptKey.sqrlonly] && Options.SqrlOnlyReceived != null)
+            if (GetClientParams().ContainsKey("opt") && ParseOpts()[OptKey.sqrlonly] && (Options.SqrlOnlyReceived != null || Options.SqrlOnlyReceivedAsync != null))
             {
-                Options.SqrlOnlyReceived.Invoke(GetClientParams()["idk"]);
+                Options.SqrlOnlyReceivedInternal(GetClientParams()["idk"], Request.HttpContext);
             }
-            if (GetClientParams().ContainsKey("opt") && ParseOpts()[OptKey.hardlock] && Options.HardlockReceived != null)
+            if (GetClientParams().ContainsKey("opt") && ParseOpts()[OptKey.hardlock] && (Options.HardlockReceived != null || Options.HardlockReceivedAsync != null))
             {
-                Options.HardlockReceived.Invoke(GetClientParams()["idk"]);
+                Options.HardlockReceivedInternal(GetClientParams()["idk"], Request.HttpContext);
             }
         }
+
+        private ILogger _logger;
 
     }
 }

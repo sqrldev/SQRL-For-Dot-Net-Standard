@@ -1,0 +1,71 @@
+﻿@page
+@model IndexModel
+<h1>With a database demo</h1>
+<p>This SQRL example uses a code first database to manage SQRL users</p>
+@if (!User.Identity.IsAuthenticated)
+{
+    <div id="customSqrlSection">
+        <p>You will see a SQRL login QR code here and a link to start the login</p>
+    </div>
+}
+else
+{
+    <p>You are now logged in as @User.Identity.Name</p>
+    <form method="get" action="/logout">
+        <button type="submit">Logout</button>
+    </form>
+}
+<script>
+    document.onload += RenderLoginPage();
+
+    function CpsProcess(e){
+        var gifProbe = new Image();
+        gifProbe.onload = function() {
+            document.location.href = "http://localhost:25519/"+ btoa(e.getAttribute("href"));
+        };
+        gifProbe.onerror = function() {
+        	setTimeout( function(){ gifProbe.src = "http://localhost:25519/" + Date.now() + '.gif';	}, 250 );
+        };
+        gifProbe.onerror();
+    }
+
+    function RenderLoginPage() {
+        var xhttp = new XMLHttpRequest();
+        xhttp.onreadystatechange = function () {
+            if (this.readyState == 4 && this.status == 200) {
+                var data = JSON.parse(this.responseText);
+                var sqrlDiv = document.getElementById("customSqrlSection");
+
+                var loginLink = document.createElement("a");
+                loginLink.setAttribute("href", data["url"] + "&can=" + data["cancelUrl"]);
+                loginLink.setAttribute("onclick", "CpsProcess(this);");
+                loginLink.innerText = "SQRL Login";
+
+                var qrCodeImage = document.createElement("img");
+                qrCodeImage.setAttribute("src", "data:image/bmp;base64," + data["qrCodeBase64"]);
+
+                sqrlDiv.appendChild(loginLink);
+                sqrlDiv.appendChild(qrCodeImage);
+
+                setInterval(function () { CheckAuto(data["checkUrl"]); }, 10000);
+
+            }
+        };
+        xhttp.open("GET", "@Request.Scheme://@Request.Host/login-sqrl?Helper", true);
+        xhttp.send();
+    }
+
+    function CheckAuto(checkUrl) {
+            var xhttp = new XMLHttpRequest();
+            xhttp.onreadystatechange = function() {{
+            if (this.readyState == 4 && this.status == 200) {
+                if(this.responseText !== "false"){
+                    window.location = checkUrl;
+                }
+            }
+            }};
+            xhttp.open("GET", checkUrl, true);
+            xhttp.send();
+        }
+
+</script>
