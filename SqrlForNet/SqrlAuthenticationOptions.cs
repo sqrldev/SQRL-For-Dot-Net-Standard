@@ -16,7 +16,7 @@ namespace SqrlForNet
 
         public int NutExpiresInSeconds { get; set; }
 
-        public int CheckMillieSeconds { get; set; }
+        public int CheckMilliSeconds { get; set; }
 
         public string NameForAnonymous { get; set; }
 
@@ -525,7 +525,7 @@ namespace SqrlForNet
 
             CallbackPath = "/login-sqrl";
             NutExpiresInSeconds = 60;
-            CheckMillieSeconds = 1000;
+            CheckMilliSeconds = 1000;
             NameForAnonymous = "SQRL anonymous user";
             Diagnostics = false;
 

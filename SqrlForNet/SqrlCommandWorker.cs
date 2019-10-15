@@ -622,7 +622,7 @@ namespace SqrlForNet
             responseMessage.AppendLine("}");
             responseMessage.AppendLine("</script>");
             responseMessage.AppendLine("</head>");
-            responseMessage.AppendLine("<body onload=\"setInterval(function(){ CheckAuto(); }, " + Options.CheckMillieSeconds + ");\">");
+            responseMessage.AppendLine("<body onload=\"setInterval(function(){ CheckAuto(); }, " + Options.CheckMilliSeconds + ");\">");
             responseMessage.AppendLine("<h1>SQRL login page</h1>");
             responseMessage.AppendLine("<img src=\"data:image/bmp;base64," + GetBase64QrCode(url) + "\">");
             responseMessage.AppendLine($"<a href=\"{url}&can={cancelUrl}\" onclick=\"CpsProcess(this);\">Sign in with SQRL</a>");
@@ -692,13 +692,13 @@ namespace SqrlForNet
             
             _logger.LogTrace("Adding values to cache");
             _logger.LogDebug("The CallbackUrl is: {0}", url);
-            _logger.LogDebug("The CheckMillieSeconds is: {0}", Options.CheckMillieSeconds);
+            _logger.LogDebug("The CheckMilliSeconds is: {0}", Options.CheckMilliSeconds);
             _logger.LogDebug("The CheckUrl is: {0}", checkUrl);
            
 
             Request.HttpContext.Items.Add("CallbackUrl", url);
             Request.HttpContext.Items.Add("QrData", qrCode);
-            Request.HttpContext.Items.Add("CheckMillieSeconds", Options.CheckMillieSeconds);
+            Request.HttpContext.Items.Add("CheckMilliSeconds", Options.CheckMilliSeconds);
             Request.HttpContext.Items.Add("CheckUrl", checkUrl);
             if (Options.OtherAuthenticationPaths != null && Options.OtherAuthenticationPaths.Any())
             {

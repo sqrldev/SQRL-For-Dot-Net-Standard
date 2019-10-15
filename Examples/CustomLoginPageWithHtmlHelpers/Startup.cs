@@ -31,7 +31,7 @@ namespace CustomLoginPageWithHtmlHelpers
                 })
                 .AddSqrl(options =>
                 {
-                    options.CheckMillieSeconds = 1000;
+                    options.CheckMilliSeconds = 1000;
                     options.CreateUser = SqrlCreateUser;
                     options.UserExists = UserExists;
                     options.UpdateUserId = UpdateUserId;

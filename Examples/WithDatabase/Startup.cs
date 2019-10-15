@@ -38,7 +38,7 @@ namespace WithDatabase
                 })
                 .AddSqrl(options =>
                 {
-                    options.CheckMillieSeconds = 10000;
+                    options.CheckMilliSeconds = 10000;
                     options.CreateUserAsync = new SqrlManager().CreateUser;
                     options.UserExistsAsync = new SqrlManager().UserExists;
                     options.UpdateUserIdAsync = new SqrlManager().UpdateUserId;
