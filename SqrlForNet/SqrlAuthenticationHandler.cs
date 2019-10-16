@@ -133,7 +133,6 @@ namespace SqrlForNet
                 };
                 Logger.LogDebug("The userId is: {0}", userId);
                 Logger.LogDebug("The username is: {0}", username);
-                Options.RemoveNutInternal(Request.Query["check"], true);
 
                 var identity = new ClaimsIdentity(claims, Scheme.Name);
                 var principal = new ClaimsPrincipal(identity);
@@ -148,7 +147,7 @@ namespace SqrlForNet
 
         private Task<HandleRequestResult> CheckCpsRequest()
         {
-            var result = Options.GetUserIdByCpsSessionIdInternal(Request.Query["cps"]);
+            var result = Options.GetUserIdAndRemoveCpsSessionIdInternal(Request.Query["cps"]);
             if (!string.IsNullOrEmpty(result))
             {
                 var username = Options.GetUsernameInternal(result, Context);
@@ -157,8 +156,6 @@ namespace SqrlForNet
                     new Claim(ClaimTypes.NameIdentifier, result),
                     new Claim(ClaimTypes.Name, username)
                 };
-
-                Options.RemoveCpsSessionIdInternal(Request.Query["cps"]);
 
                 var identity = new ClaimsIdentity(claims, Scheme.Name);
                 var principal = new ClaimsPrincipal(identity);

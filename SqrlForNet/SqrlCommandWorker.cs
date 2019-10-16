@@ -113,7 +113,6 @@ namespace SqrlForNet
                 BadCommand();
             }
             _logger.LogTrace("Removing NUT: {0}", Request.Query["nut"]);
-            Options.RemoveNutInternal(Request.Query["nut"], false);
         }
 
         private bool IsValidNutRequest()
@@ -180,7 +179,7 @@ namespace SqrlForNet
         {
             _logger.LogTrace("Getting status of NUT");
             var nut = Request.Query["nut"];
-            var nutInfo = Options.GetNutInternal(nut, false);
+            var nutInfo = Options.GetAndRemoveNutInternal(nut);
 
             if (nutInfo == null)
             {
@@ -368,7 +367,7 @@ namespace SqrlForNet
             var opts = ParseOpts();
             if (!opts[OptKey.cps])
             {
-                var nutInfo = Options.GetNutInternal(nut, false);
+                var nutInfo = Options.GetAndRemoveNutInternal(nut);
                 var authNutInfo = new NutInfo
                 {
                     FirstNut = nutInfo.FirstNut,
@@ -747,7 +746,7 @@ namespace SqrlForNet
         {
             var checkNut = Request.Query["check"];
 
-            var isAuthorized = Options.CheckNutAuthorizedInternal(checkNut);
+            var isAuthorized = Options.RemoveAuthorizedNutInternal(checkNut);
             if (!isAuthorized)
             {
                 var responseMessage = new StringBuilder();
@@ -827,7 +826,7 @@ namespace SqrlForNet
             NutInfo currentNut = null;
             if (Request.Query.ContainsKey("nut"))
             {
-                currentNut = Options.GetNutInternal(Request.Query["nut"], false);
+                currentNut = Options.GetAndRemoveNutInternal(Request.Query["nut"]);
             }
             return new NutInfo
             {

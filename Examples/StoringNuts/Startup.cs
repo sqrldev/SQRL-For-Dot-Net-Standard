@@ -44,15 +44,12 @@ namespace StoringNuts
 
                     //These are used to manage nuts
                     options.StoreNut = StoreNut;
-                    options.GetNut = GetNut;
-                    options.RemoveNut = RemoveNut;
+                    options.GetAndRemoveNut = GetAndRemoveNut;
                     options.GetNutIdk = GetNutIdk;
-                    options.CheckNutAuthorized = CheckNutAuthorized;
+                    options.RemoveAuthorizedNut = RemoveAuthorizedNut;
 
                     options.StoreCpsSessionId = StoreCpsSessionId;
-                    options.GetUserIdByCpsSessionId = GetUserIdByCpsSessionId;
-                    options.RemoveCpsSessionId = RemoveCpsSessionId;
-
+                    options.GetUserIdAndRemoveCpsSessionId = GetUserIdAndRemoveCpsSessionId;
                 });
 
             services.AddMvc();
@@ -158,13 +155,15 @@ namespace StoringNuts
         /// </summary>
         private static readonly Dictionary<string, NutInfo> AuthorizedNutList = new Dictionary<string, NutInfo>();
 
-        private NutInfo GetNut(string nut, bool authorized)
+        private NutInfo GetAndRemoveNut(string nut)
         {
-            if (authorized)
+            if (NutList.ContainsKey(nut))
             {
-                return AuthorizedNutList.ContainsKey(nut) ? AuthorizedNutList[nut] : null;
+                var info = NutList[nut];
+                NutList.Remove(nut);
+                return info;
             }
-            return NutList.ContainsKey(nut) ? NutList[nut] : null;
+            return null;
         }
 
         private void StoreNut(string nut, NutInfo info, bool authorized)
@@ -179,21 +178,15 @@ namespace StoringNuts
             }
         }
 
-        private void RemoveNut(string nut, bool authorized)
+        private bool RemoveAuthorizedNut(string nut)
         {
-            if (authorized)
+            var authorizedNut = AuthorizedNutList.SingleOrDefault(x => x.Key == nut || x.Value.FirstNut == nut);
+            if (authorizedNut.Key == nut)
             {
                 AuthorizedNutList.Remove(nut);
+                return true;
             }
-            else
-            {
-                NutList.Remove(nut);
-            }
-        }
-
-        private bool CheckNutAuthorized(string nut)
-        {
-            return AuthorizedNutList.Any(x => x.Key == nut || x.Value.FirstNut == nut);
+            return false;
         }
 
         private string GetNutIdk(string nut)
@@ -209,16 +202,16 @@ namespace StoringNuts
             CpsSessions.Add(sessionId, userId);
         }
 
-        private string GetUserIdByCpsSessionId(string sessionId)
+        private string GetUserIdAndRemoveCpsSessionId(string sessionId)
         {
-            return CpsSessions.ContainsKey(sessionId) ? CpsSessions[sessionId] : null;
+            if (CpsSessions.ContainsKey(sessionId))
+            {
+                var userId = CpsSessions[sessionId];
+                CpsSessions.Remove(userId);
+                return userId;
+            }
+
+            return null;
         }
-
-        private void RemoveCpsSessionId(string sessionId)
-        {
-            CpsSessions.Remove(sessionId);
-        }
-
-
     }
 }
