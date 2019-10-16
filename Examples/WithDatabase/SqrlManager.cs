@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -8,7 +9,7 @@ using WithDatabase.Database;
 
 namespace WithDatabase
 {
-    public class SqrlManager : IUserManagementRequiredHooksAsync, IUserManagementOptionalHooksAsync
+    public class SqrlManager : IUserManagementRequiredHooksAsync, IUserManagementOptionalHooksAsync, INutManagementHooksAsync
     {
 
         public async Task<UserLookUpResult> UserExists(string userId, HttpContext context)
@@ -102,6 +103,50 @@ namespace WithDatabase
             var _database = context.RequestServices.GetRequiredService<DatabaseContext>();
             var user = await _database.User.Include(x => x.SqrlUser).SingleAsync(x => x.SqrlUser.UserId == userId);
             return user.Username;
+        }
+
+        public async Task<NutInfo> GetAndRemoveNut(string nut, HttpContext context)
+        {
+            var _database = context.RequestServices.GetRequiredService<DatabaseContext>();
+            var nutData = await _database.Nuts.FindAsync(nut);
+            _database.Nuts.Remove(nutData);
+            await _database.SaveChangesAsync();
+            return nutData;
+        }
+
+        public async Task StoreNut(string nut, NutInfo info, bool authorized, HttpContext context)
+        {
+            var _database = context.RequestServices.GetRequiredService<DatabaseContext>();
+            await _database.Nuts.AddAsync(new NutInfoData()
+            {
+                Nut = nut,
+                CreatedDate = info.CreatedDate,
+                FirstNut = info.FirstNut,
+                Idk = info.Idk,
+                IpAddress = info.IpAddress
+            });
+            await _database.SaveChangesAsync();
+        }
+
+        public async Task<bool> RemoveAuthorizedNut(string nut, HttpContext context)
+        {
+            var _database = context.RequestServices.GetRequiredService<DatabaseContext>();
+            var isAuthorized = await _database.Nuts.Where(x => x.Authorized).AnyAsync(x => x.Nut == nut || x.FirstNut == nut);
+            if (isAuthorized)
+            {
+                var authorizedNut = await _database.Nuts.Where(x => x.Authorized).SingleAsync(x => x.Nut == nut || x.FirstNut == nut);
+                _database.Nuts.Remove(authorizedNut);
+                await _database.SaveChangesAsync();
+                return true;
+            }
+            return false;
+        }
+
+        public async Task<string> GetNutIdk(string nut, HttpContext context)
+        {
+            var _database = context.RequestServices.GetRequiredService<DatabaseContext>();
+            var nutInfo = await _database.Nuts.FindAsync(nut);
+            return nutInfo.Idk;
         }
     }
 }

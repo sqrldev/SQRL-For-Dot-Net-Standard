@@ -125,7 +125,7 @@ namespace SqrlForNet
             if (result)
             {
                 Logger.LogTrace("User is authorized and can be logged in");
-                var userId = Options.GetNutIdkInternal(Request.Query["check"]);
+                var userId = Options.GetNutIdkInternal(Request.Query["check"], Context);
                 var username = Options.GetUsernameInternal(userId, Context);
                 var claims = new[] {
                     new Claim(ClaimTypes.NameIdentifier, userId),
@@ -147,7 +147,7 @@ namespace SqrlForNet
 
         private Task<HandleRequestResult> CheckCpsRequest()
         {
-            var result = Options.GetUserIdAndRemoveCpsSessionIdInternal(Request.Query["cps"]);
+            var result = Options.GetUserIdAndRemoveCpsSessionIdInternal(Request.Query["cps"], Context);
             if (!string.IsNullOrEmpty(result))
             {
                 var username = Options.GetUsernameInternal(result, Context);

@@ -155,7 +155,7 @@ namespace StoringNuts
         /// </summary>
         private static readonly Dictionary<string, NutInfo> AuthorizedNutList = new Dictionary<string, NutInfo>();
 
-        private NutInfo GetAndRemoveNut(string nut)
+        private NutInfo GetAndRemoveNut(string nut, HttpContext httpContext)
         {
             if (NutList.ContainsKey(nut))
             {
@@ -166,7 +166,7 @@ namespace StoringNuts
             return null;
         }
 
-        private void StoreNut(string nut, NutInfo info, bool authorized)
+        private void StoreNut(string nut, NutInfo info, bool authorized, HttpContext arg4)
         {
             if (authorized)
             {
@@ -178,7 +178,7 @@ namespace StoringNuts
             }
         }
 
-        private bool RemoveAuthorizedNut(string nut)
+        private bool RemoveAuthorizedNut(string nut, HttpContext httpContext)
         {
             var authorizedNut = AuthorizedNutList.SingleOrDefault(x => x.Key == nut || x.Value.FirstNut == nut);
             if (authorizedNut.Key == nut)
@@ -189,7 +189,7 @@ namespace StoringNuts
             return false;
         }
 
-        private string GetNutIdk(string nut)
+        private string GetNutIdk(string nut, HttpContext httpContext)
         {
             return AuthorizedNutList.Single(x => x.Key == nut || x.Value.FirstNut == nut).Value.Idk;
         }
@@ -197,12 +197,12 @@ namespace StoringNuts
 
         private static readonly Dictionary<string, string> CpsSessions = new Dictionary<string, string>();
 
-        private void StoreCpsSessionId(string sessionId, string userId)
+        private void StoreCpsSessionId(string sessionId, string userId, HttpContext arg3)
         {
             CpsSessions.Add(sessionId, userId);
         }
 
-        private string GetUserIdAndRemoveCpsSessionId(string sessionId)
+        private string GetUserIdAndRemoveCpsSessionId(string sessionId, HttpContext httpContext)
         {
             if (CpsSessions.ContainsKey(sessionId))
             {

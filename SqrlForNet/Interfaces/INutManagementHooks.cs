@@ -1,32 +1,29 @@
 ﻿using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
 
 namespace SqrlForNet.Interfaces
 {
     public interface INutManagementHooks
     {
-        NutInfo GetNut(string nut, bool authorized);
+        NutInfo GetAndRemoveNut(string nut, HttpContext context);
 
-        void StoreNut(string nut, NutInfo info, bool authorized);
+        void StoreNut(string nut, NutInfo info, bool authorized, HttpContext context);
 
-        void RemoveNut(string nut, bool authorized);
+        bool RemoveAuthorizedNut(string nut, HttpContext context);
 
-        bool CheckNutAuthorized(string nut);
-
-        string GetNutIdk(string nut);
+        string GetNutIdk(string nut, HttpContext context);
 
     }
 
     public interface INutManagementHooksAsync
     {
-        Task<NutInfo> GetNut(string nut, bool authorized);
+        Task<NutInfo> GetAndRemoveNut(string nut, HttpContext context);
 
-        Task StoreNut(string nut, NutInfo info, bool authorized);
+        Task StoreNut(string nut, NutInfo info, bool authorized, HttpContext context);
 
-        Task RemoveNut(string nut, bool authorized);
+        Task<bool> RemoveAuthorizedNut(string nut, HttpContext context);
 
-        Task CheckNutAuthorized(string nut);
-
-        Task<string> GetNutIdk(string nut);
+        Task<string> GetNutIdk(string nut, HttpContext context);
 
     }
 }

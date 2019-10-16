@@ -168,23 +168,23 @@ namespace SqrlForNet
             }
         }
 
-        public Func<string, NutInfo> GetAndRemoveNut;
+        public Func<string, HttpContext, NutInfo> GetAndRemoveNut;
 
-        public Func<string, Task<NutInfo>> GetAndRemoveNutAsync;
+        public Func<string, HttpContext, Task<NutInfo>> GetAndRemoveNutAsync;
 
         private KeyValuePair<string, NutInfo> _currentNutInfo;
 
-        internal NutInfo GetAndRemoveNutInternal(string nut)
+        internal NutInfo GetAndRemoveNutInternal(string nut, HttpContext context)
         {
             if (_currentNutInfo.Key != nut)
             {
                 if (GetAndRemoveNut != null)
                 {
-                    _currentNutInfo = new KeyValuePair<string, NutInfo>(nut, GetAndRemoveNut.Invoke(nut));
+                    _currentNutInfo = new KeyValuePair<string, NutInfo>(nut, GetAndRemoveNut.Invoke(nut, context));
                 }
                 else
                 {
-                    var task = GetAndRemoveNutAsync.Invoke(nut);
+                    var task = GetAndRemoveNutAsync.Invoke(nut, context);
                     task.Wait();
                     _currentNutInfo = new KeyValuePair<string, NutInfo>(nut, task.Result);
                 }
@@ -193,87 +193,87 @@ namespace SqrlForNet
             return _currentNutInfo.Value;
         }
 
-        public Action<string, NutInfo, bool> StoreNut;
+        public Action<string, NutInfo, bool, HttpContext> StoreNut;
 
-        public Func<string, NutInfo, bool, Task> StoreNutAsync;
+        public Func<string, NutInfo, bool, HttpContext, Task> StoreNutAsync;
 
-        internal void StoreNutInternal(string nut, NutInfo info, bool authorized)
+        internal void StoreNutInternal(string nut, NutInfo info, bool authorized, HttpContext context)
         {
             if (StoreNut != null)
             {
-                StoreNut.Invoke(nut, info, authorized);
+                StoreNut.Invoke(nut, info, authorized, context);
             }
             else
             {
-                StoreNutAsync.Invoke(nut, info, authorized).Wait();
+                StoreNutAsync.Invoke(nut, info, authorized, context).Wait();
             }
         }
 
-        public Func<string, bool> RemoveAuthorizedNut;
+        public Func<string, HttpContext, bool> RemoveAuthorizedNut;
 
-        public Func<string, Task<bool>> RemoveAuthorizedNutAsync;
+        public Func<string, HttpContext, Task<bool>> RemoveAuthorizedNutAsync;
 
-        internal bool RemoveAuthorizedNutInternal(string nut)
+        internal bool RemoveAuthorizedNutInternal(string nut, HttpContext context)
         {
             if (RemoveAuthorizedNut != null)
             {
-                return RemoveAuthorizedNut.Invoke(nut);
+                return RemoveAuthorizedNut.Invoke(nut, context);
             }
             else
             {
-                var task = RemoveAuthorizedNutAsync.Invoke(nut);
+                var task = RemoveAuthorizedNutAsync.Invoke(nut, context);
                 task.Wait();
                 return task.Result;
             }
         }
 
-        public Func<string, string> GetNutIdk;
+        public Func<string, HttpContext, string> GetNutIdk;
 
-        public Func<string, Task<string>> GetNutIdkAsync;
+        public Func<string, HttpContext, Task<string>> GetNutIdkAsync;
 
-        internal string GetNutIdkInternal(string nut)
+        internal string GetNutIdkInternal(string nut, HttpContext context)
         {
             if (GetNutIdk != null)
             {
-                return GetNutIdk.Invoke(nut);
+                return GetNutIdk.Invoke(nut, context);
             }
             else
             {
-                var task = GetNutIdkAsync.Invoke(nut);
+                var task = GetNutIdkAsync.Invoke(nut, context);
                 task.Wait();
                 return task.Result;
             }
         }
 
-        public Action<string,string> StoreCpsSessionId;
+        public Action<string, string, HttpContext> StoreCpsSessionId;
 
-        public Func<string,string, Task> StoreCpsSessionIdAsync;
+        public Func<string,string, HttpContext, Task> StoreCpsSessionIdAsync;
 
-        internal void StoreCpsSessionIdInternal(string code, string idk)
+        internal void StoreCpsSessionIdInternal(string code, string idk, HttpContext context)
         {
             if (StoreCpsSessionId != null)
             {
-                StoreCpsSessionId.Invoke(code, idk);
+                StoreCpsSessionId.Invoke(code, idk, context);
             }
             else
             {
-                StoreCpsSessionIdAsync.Invoke(code, idk).Wait();
+                StoreCpsSessionIdAsync.Invoke(code, idk, context).Wait();
             }
         }
 
-        public Func<string, string> GetUserIdAndRemoveCpsSessionId;
+        public Func<string, HttpContext, string> GetUserIdAndRemoveCpsSessionId;
 
-        public Func<string, Task<string>> GetUserIdAndRemoveCpsSessionIdAsync;
+        public Func<string, HttpContext, Task<string>> GetUserIdAndRemoveCpsSessionIdAsync;
 
-        internal string GetUserIdAndRemoveCpsSessionIdInternal(string code)
+        internal string GetUserIdAndRemoveCpsSessionIdInternal(string code, HttpContext context)
         {
             if (GetUserIdAndRemoveCpsSessionId != null)
             {
-                return GetUserIdAndRemoveCpsSessionId.Invoke(code);
+                return GetUserIdAndRemoveCpsSessionId.Invoke(code, context);
             }
             else
             {
-                var task = GetUserIdAndRemoveCpsSessionIdAsync.Invoke(code);
+                var task = GetUserIdAndRemoveCpsSessionIdAsync.Invoke(code, context);
                 task.Wait();
                 return task.Result;
             }
@@ -395,7 +395,7 @@ namespace SqrlForNet
             }
         }
 
-        private NutInfo GetAndRemoveNutMethod(string nut)
+        private NutInfo GetAndRemoveNutMethod(string nut, HttpContext httpContext)
         {
             ClearOldNuts();
             lock (NutList)
@@ -410,7 +410,7 @@ namespace SqrlForNet
             return null;
         }
 
-        private void StoreNutMethod(string nut, NutInfo info, bool authorized)
+        private void StoreNutMethod(string nut, NutInfo info, bool authorized, HttpContext arg4)
         {
             ClearOldNuts();
             if (authorized)
@@ -429,7 +429,7 @@ namespace SqrlForNet
             }
         }
 
-        private bool RemoveAuthorizedNutMethod(string nut)
+        private bool RemoveAuthorizedNutMethod(string nut, HttpContext httpContext)
         {
             ClearOldNuts();
             lock (AuthorizedNutList)
@@ -444,7 +444,7 @@ namespace SqrlForNet
             }
         }
 
-        private string GetNutIdkMethod(string nut)
+        private string GetNutIdkMethod(string nut, HttpContext httpContext)
         {
             ClearOldNuts();
             lock (AuthorizedNutList)
@@ -455,7 +455,7 @@ namespace SqrlForNet
         
         private static readonly Dictionary<string, string> CpsSessions = new Dictionary<string, string>();
         
-        private void StoreCpsSessionIdMethod(string sessionId, string userId)
+        private void StoreCpsSessionIdMethod(string sessionId, string userId, HttpContext context)
         {
             lock (CpsSessions)
             {
@@ -463,7 +463,7 @@ namespace SqrlForNet
             }
         }
 
-        private string GetUserIdAndRemoveCpsSessionIdMethod(string sessionId)
+        private string GetUserIdAndRemoveCpsSessionIdMethod(string sessionId, HttpContext context)
         {
             lock (CpsSessions)
             {

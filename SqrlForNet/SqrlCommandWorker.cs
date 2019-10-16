@@ -179,7 +179,7 @@ namespace SqrlForNet
         {
             _logger.LogTrace("Getting status of NUT");
             var nut = Request.Query["nut"];
-            var nutInfo = Options.GetAndRemoveNutInternal(nut);
+            var nutInfo = Options.GetAndRemoveNutInternal(nut, Request.HttpContext);
 
             if (nutInfo == null)
             {
@@ -367,7 +367,7 @@ namespace SqrlForNet
             var opts = ParseOpts();
             if (!opts[OptKey.cps])
             {
-                var nutInfo = Options.GetAndRemoveNutInternal(nut);
+                var nutInfo = Options.GetAndRemoveNutInternal(nut, Request.HttpContext);
                 var authNutInfo = new NutInfo
                 {
                     FirstNut = nutInfo.FirstNut,
@@ -375,7 +375,7 @@ namespace SqrlForNet
                     IpAddress = nutInfo.IpAddress,
                     Idk = nutInfo.Idk
                 };
-                Options.StoreNutInternal(nut, authNutInfo, true);
+                Options.StoreNutInternal(nut, authNutInfo, true, Request.HttpContext);
                 return true;
             }
             return false;
@@ -746,7 +746,7 @@ namespace SqrlForNet
         {
             var checkNut = Request.Query["check"];
 
-            var isAuthorized = Options.RemoveAuthorizedNutInternal(checkNut);
+            var isAuthorized = Options.RemoveAuthorizedNutInternal(checkNut, Request.HttpContext);
             if (!isAuthorized)
             {
                 var responseMessage = new StringBuilder();
@@ -816,7 +816,7 @@ namespace SqrlForNet
             _logger.LogTrace("Storing NUT");
 
             _logger.LogDebug("The NUT been stored is: {0}", nut);
-            Options.StoreNutInternal(nut, NewNutInfo(), false);
+            Options.StoreNutInternal(nut, NewNutInfo(), false, Request.HttpContext);
 
             _logger.LogTrace("NUT stored");
         }
@@ -826,7 +826,7 @@ namespace SqrlForNet
             NutInfo currentNut = null;
             if (Request.Query.ContainsKey("nut"))
             {
-                currentNut = Options.GetAndRemoveNutInternal(Request.Query["nut"]);
+                currentNut = Options.GetAndRemoveNutInternal(Request.Query["nut"], Request.HttpContext);
             }
             return new NutInfo
             {
@@ -914,7 +914,7 @@ namespace SqrlForNet
         public string GenerateCpsCode()
         {
             var code = Guid.NewGuid().ToString("N");
-            Options.StoreCpsSessionIdInternal(code, GetClientParams()["idk"]);
+            Options.StoreCpsSessionIdInternal(code, GetClientParams()["idk"], Request.HttpContext);
             return code;
         }
 
