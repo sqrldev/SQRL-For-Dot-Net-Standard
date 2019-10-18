@@ -889,7 +889,17 @@ namespace SqrlForNet
         {
             if (_optionsCache == null)
             {
-                var options = GetClientParams()["opt"].Split('~');
+                var clientParams = GetClientParams();
+                string[] options;
+                if (clientParams.ContainsKey("opt"))
+                {
+                    options = clientParams["opt"].Split('~');
+                }
+                else
+                {
+                    options = new string[0];
+                }
+
                 _optionsCache = Enum.GetNames(typeof(OptKey))
                     .ToDictionary(
                         supportedOption =>
@@ -921,11 +931,11 @@ namespace SqrlForNet
 
         private void NoneQueryOptionHandling()
         {
-            if (GetClientParams().ContainsKey("opt") && ParseOpts()[OptKey.sqrlonly] && (Options.SqrlOnlyReceived != null || Options.SqrlOnlyReceivedAsync != null))
+            if (ParseOpts()[OptKey.sqrlonly] && (Options.SqrlOnlyReceived != null || Options.SqrlOnlyReceivedAsync != null))
             {
                 Options.SqrlOnlyReceivedInternal(GetClientParams()["idk"], Request.HttpContext);
             }
-            if (GetClientParams().ContainsKey("opt") && ParseOpts()[OptKey.hardlock] && (Options.HardlockReceived != null || Options.HardlockReceivedAsync != null))
+            if (ParseOpts()[OptKey.hardlock] && (Options.HardlockReceived != null || Options.HardlockReceivedAsync != null))
             {
                 Options.HardlockReceivedInternal(GetClientParams()["idk"], Request.HttpContext);
             }
