@@ -77,6 +77,7 @@ namespace WithDatabase
             _database.User.Add(new User()
             {
                 Username = "New user",
+                Role = "User",
                 SqrlUser = new SqrlUser()
                 {
                     UserId = userId,
