@@ -12,6 +12,8 @@ namespace WithDatabase.Database
         public DbSet<SqrlUser> SqrlUser { get; set; }
 
         public DbSet<User> User { get; set; }
+
+        public DbSet<NutInfoData> Nuts { get; set; }
         
         public void UpdateDatabase()
         {

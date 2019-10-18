@@ -4,6 +4,17 @@
     <TargetFramework>netcoreapp3.0</TargetFramework>
   </PropertyGroup>
 
+  <ItemGroup>
+    <Compile Remove="Migrations\20191016160951_AddedNutStoreData.cs" />
+    <Compile Remove="Migrations\20191016160951_AddedNutStoreData.Designer.cs" />
+    <Compile Remove="Migrations\20191016161048_AddedNutStoreData.cs" />
+    <Compile Remove="Migrations\20191016161048_AddedNutStoreData.Designer.cs" />
+    <Compile Remove="Migrations\20191016161618_AddedNutStoreData.cs" />
+    <Compile Remove="Migrations\20191016161618_AddedNutStoreData.Designer.cs" />
+    <Compile Remove="Migrations\20191017090335_AddedDefaultRole.cs" />
+    <Compile Remove="Migrations\20191017090335_AddedDefaultRole.Designer.cs" />
+  </ItemGroup>
+
 
   <ItemGroup>
     <Folder Include="wwwroot\" />

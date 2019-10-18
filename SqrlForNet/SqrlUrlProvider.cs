@@ -39,7 +39,7 @@ namespace SqrlForNet
 
         public static string GetCheckMilliseconds(HttpRequest request)
         {
-            return request.HttpContext.Items["CheckMillieSeconds"].ToString();
+            return request.HttpContext.Items["CheckMilliSeconds"].ToString();
         }
 
         public static string SqrlCheckMilliseconds(this HttpRequest request)

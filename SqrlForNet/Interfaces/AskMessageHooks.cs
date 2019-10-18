@@ -3,14 +3,14 @@ using Microsoft.AspNetCore.Http;
 
 namespace SqrlForNet.Interfaces
 {
-    public interface AskMessageHooks
+    public interface IAskMessageHooks
     {
         AskMessage GetAskQuestion(HttpRequest request, string nut);
 
         bool ProcessAskResponse(HttpRequest request, string nut, int button);
     }
 
-    public interface AskMessageHooksAsync
+    public interface IAskMessageHooksAsync
     {
         Task<AskMessage> GetAskQuestion(HttpRequest request, string nut);
 

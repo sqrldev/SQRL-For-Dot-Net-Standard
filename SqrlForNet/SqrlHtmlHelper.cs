@@ -24,7 +24,7 @@ namespace SqrlForNet
         public static HtmlString SqrlLink<TModel>(this IHtmlHelper<TModel> helper, HttpRequest request, string text, bool poll)
         {
             ValidateRequestData(request);
-            return SqrlLink(helper, request, text, poll, int.Parse(request.HttpContext.Items["CheckMillieSeconds"].ToString()));
+            return SqrlLink(helper, request, text, poll, int.Parse(request.HttpContext.Items["CheckMilliSeconds"].ToString()));
         }
 
         public static HtmlString SqrlLink<TModel>(this IHtmlHelper<TModel> helper, HttpRequest request, string text, bool poll, int pollTime)
@@ -86,7 +86,7 @@ namespace SqrlForNet
         public static HtmlString SqrlLinkForPath<TModel>(this IHtmlHelper<TModel> helper, HttpRequest request, string text, bool poll, string path)
         {
             ValidateRequestData(request, path);
-            return SqrlLinkForPath(helper, request, text, poll, int.Parse(request.HttpContext.Items["CheckMillieSeconds"].ToString()), path);
+            return SqrlLinkForPath(helper, request, text, poll, int.Parse(request.HttpContext.Items["CheckMilliSeconds"].ToString()), path);
         }
 
         public static HtmlString SqrlLinkForPath<TModel>(this IHtmlHelper<TModel> helper, HttpRequest request, string text, bool poll, int pollTime, string path)
@@ -145,7 +145,7 @@ namespace SqrlForNet
         public static HtmlString SqrlQrImage<TModel>(this IHtmlHelper<TModel> helper, HttpRequest request, bool poll)
         {
             ValidateRequestData(request);
-            return SqrlQrImage(helper, request, poll, int.Parse(request.HttpContext.Items["CheckMillieSeconds"].ToString()));
+            return SqrlQrImage(helper, request, poll, int.Parse(request.HttpContext.Items["CheckMilliSeconds"].ToString()));
         }
 
         public static HtmlString SqrlQrImage<TModel>(this IHtmlHelper<TModel> helper, HttpRequest request, bool poll, int pollTime)
@@ -188,7 +188,7 @@ namespace SqrlForNet
         public static HtmlString SqrlQrImageForPath<TModel>(this IHtmlHelper<TModel> helper, HttpRequest request, bool poll, string path)
         {
             ValidateRequestData(request, path);
-            return SqrlQrImageForPath(helper, request, poll, int.Parse(request.HttpContext.Items["CheckMillieSeconds"].ToString()), path);
+            return SqrlQrImageForPath(helper, request, poll, int.Parse(request.HttpContext.Items["CheckMilliSeconds"].ToString()), path);
         }
 
         public static HtmlString SqrlQrImageForPath<TModel>(this IHtmlHelper<TModel> helper, HttpRequest request, bool poll, int pollTime, string path)
@@ -237,7 +237,7 @@ namespace SqrlForNet
         public static HtmlString SqrlLinkAndImage<TModel>(this IHtmlHelper<TModel> helper, HttpRequest request, string text, bool poll)
         {
             ValidateRequestData(request);
-            return SqrlLinkAndImage(helper, request, text, poll, int.Parse(request.HttpContext.Items["CheckMillieSeconds"].ToString()));
+            return SqrlLinkAndImage(helper, request, text, poll, int.Parse(request.HttpContext.Items["CheckMilliSeconds"].ToString()));
         }
 
         public static HtmlString SqrlLinkAndImage<TModel>(this IHtmlHelper<TModel> helper, HttpRequest request, string text, bool poll, int pollTime)
@@ -259,7 +259,7 @@ namespace SqrlForNet
         public static HtmlString SqrlLinkAndImageForPath<TModel>(this IHtmlHelper<TModel> helper, HttpRequest request, string text, bool poll, string path)
         {
             ValidateRequestData(request, path);
-            return SqrlLinkAndImageForPath(helper, request, text, poll, int.Parse(request.HttpContext.Items["CheckMillieSeconds"].ToString()), path);
+            return SqrlLinkAndImageForPath(helper, request, text, poll, int.Parse(request.HttpContext.Items["CheckMilliSeconds"].ToString()), path);
         }
 
         public static HtmlString SqrlLinkAndImageForPath<TModel>(this IHtmlHelper<TModel> helper, HttpRequest request, string text, bool poll, int pollTime, string path)
@@ -283,7 +283,7 @@ namespace SqrlForNet
             }
             if (!request.HttpContext.Items.ContainsKey("CallbackUrl") ||
                 !request.HttpContext.Items.ContainsKey("QrData") ||
-                !request.HttpContext.Items.ContainsKey("CheckMillieSeconds") ||
+                !request.HttpContext.Items.ContainsKey("CheckMilliSeconds") ||
                 !request.HttpContext.Items.ContainsKey("CheckUrl")
             )
             {

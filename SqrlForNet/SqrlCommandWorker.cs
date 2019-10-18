@@ -113,7 +113,6 @@ namespace SqrlForNet
                 BadCommand();
             }
             _logger.LogTrace("Removing NUT: {0}", Request.Query["nut"]);
-            Options.RemoveNutInternal(Request.Query["nut"], false);
         }
 
         private bool IsValidNutRequest()
@@ -180,7 +179,7 @@ namespace SqrlForNet
         {
             _logger.LogTrace("Getting status of NUT");
             var nut = Request.Query["nut"];
-            var nutInfo = Options.GetNutInternal(nut, false);
+            var nutInfo = Options.GetAndRemoveNutInternal(nut, Request.HttpContext);
 
             if (nutInfo == null)
             {
@@ -368,7 +367,7 @@ namespace SqrlForNet
             var opts = ParseOpts();
             if (!opts[OptKey.cps])
             {
-                var nutInfo = Options.GetNutInternal(nut, false);
+                var nutInfo = Options.GetAndRemoveNutInternal(nut, Request.HttpContext);
                 var authNutInfo = new NutInfo
                 {
                     FirstNut = nutInfo.FirstNut,
@@ -376,7 +375,7 @@ namespace SqrlForNet
                     IpAddress = nutInfo.IpAddress,
                     Idk = nutInfo.Idk
                 };
-                Options.StoreNutInternal(nut, authNutInfo, true);
+                Options.StoreNutInternal(nut, authNutInfo, true, Request.HttpContext);
                 return true;
             }
             return false;
@@ -622,7 +621,7 @@ namespace SqrlForNet
             responseMessage.AppendLine("}");
             responseMessage.AppendLine("</script>");
             responseMessage.AppendLine("</head>");
-            responseMessage.AppendLine("<body onload=\"setInterval(function(){ CheckAuto(); }, " + Options.CheckMillieSeconds + ");\">");
+            responseMessage.AppendLine("<body onload=\"setInterval(function(){ CheckAuto(); }, " + Options.CheckMilliSeconds + ");\">");
             responseMessage.AppendLine("<h1>SQRL login page</h1>");
             responseMessage.AppendLine("<img src=\"data:image/bmp;base64," + GetBase64QrCode(url) + "\">");
             responseMessage.AppendLine($"<a href=\"{url}&can={cancelUrl}\" onclick=\"CpsProcess(this);\">Sign in with SQRL</a>");
@@ -692,13 +691,13 @@ namespace SqrlForNet
             
             _logger.LogTrace("Adding values to cache");
             _logger.LogDebug("The CallbackUrl is: {0}", url);
-            _logger.LogDebug("The CheckMillieSeconds is: {0}", Options.CheckMillieSeconds);
+            _logger.LogDebug("The CheckMilliSeconds is: {0}", Options.CheckMilliSeconds);
             _logger.LogDebug("The CheckUrl is: {0}", checkUrl);
            
 
             Request.HttpContext.Items.Add("CallbackUrl", url);
             Request.HttpContext.Items.Add("QrData", qrCode);
-            Request.HttpContext.Items.Add("CheckMillieSeconds", Options.CheckMillieSeconds);
+            Request.HttpContext.Items.Add("CheckMilliSeconds", Options.CheckMilliSeconds);
             Request.HttpContext.Items.Add("CheckUrl", checkUrl);
             if (Options.OtherAuthenticationPaths != null && Options.OtherAuthenticationPaths.Any())
             {
@@ -747,7 +746,7 @@ namespace SqrlForNet
         {
             var checkNut = Request.Query["check"];
 
-            var isAuthorized = Options.CheckNutAuthorizedInternal(checkNut);
+            var isAuthorized = Options.RemoveAuthorizedNutInternal(checkNut, Request.HttpContext);
             if (!isAuthorized)
             {
                 var responseMessage = new StringBuilder();
@@ -817,7 +816,7 @@ namespace SqrlForNet
             _logger.LogTrace("Storing NUT");
 
             _logger.LogDebug("The NUT been stored is: {0}", nut);
-            Options.StoreNutInternal(nut, NewNutInfo(), false);
+            Options.StoreNutInternal(nut, NewNutInfo(), false, Request.HttpContext);
 
             _logger.LogTrace("NUT stored");
         }
@@ -827,7 +826,7 @@ namespace SqrlForNet
             NutInfo currentNut = null;
             if (Request.Query.ContainsKey("nut"))
             {
-                currentNut = Options.GetNutInternal(Request.Query["nut"], false);
+                currentNut = Options.GetAndRemoveNutInternal(Request.Query["nut"], Request.HttpContext);
             }
             return new NutInfo
             {
@@ -889,7 +888,17 @@ namespace SqrlForNet
         {
             if (_optionsCache == null)
             {
-                var options = GetClientParams()["opt"].Split('~');
+                var clientParams = GetClientParams();
+                string[] options;
+                if (clientParams.ContainsKey("opt"))
+                {
+                    options = clientParams["opt"].Split('~');
+                }
+                else
+                {
+                    options = new string[0];
+                }
+
                 _optionsCache = Enum.GetNames(typeof(OptKey))
                     .ToDictionary(
                         supportedOption =>
@@ -915,17 +924,17 @@ namespace SqrlForNet
         public string GenerateCpsCode()
         {
             var code = Guid.NewGuid().ToString("N");
-            Options.StoreCpsSessionIdInternal(code, GetClientParams()["idk"]);
+            Options.StoreCpsSessionIdInternal(code, GetClientParams()["idk"], Request.HttpContext);
             return code;
         }
 
         private void NoneQueryOptionHandling()
         {
-            if (GetClientParams().ContainsKey("opt") && ParseOpts()[OptKey.sqrlonly] && (Options.SqrlOnlyReceived != null || Options.SqrlOnlyReceivedAsync != null))
+            if (ParseOpts()[OptKey.sqrlonly] && (Options.SqrlOnlyReceived != null || Options.SqrlOnlyReceivedAsync != null))
             {
                 Options.SqrlOnlyReceivedInternal(GetClientParams()["idk"], Request.HttpContext);
             }
-            if (GetClientParams().ContainsKey("opt") && ParseOpts()[OptKey.hardlock] && (Options.HardlockReceived != null || Options.HardlockReceivedAsync != null))
+            if (ParseOpts()[OptKey.hardlock] && (Options.HardlockReceived != null || Options.HardlockReceivedAsync != null))
             {
                 Options.HardlockReceivedInternal(GetClientParams()["idk"], Request.HttpContext);
             }
