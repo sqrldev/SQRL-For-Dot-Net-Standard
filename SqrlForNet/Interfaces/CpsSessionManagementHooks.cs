@@ -2,7 +2,7 @@
 
 namespace SqrlForNet.Interfaces
 {
-    public interface CpsSessionManagementHooks
+    public interface ICpsSessionManagementHooks
     {
         void StoreCpsSessionId(string code, string userId);
 
@@ -12,7 +12,7 @@ namespace SqrlForNet.Interfaces
 
     }
 
-    public interface CpsSessionManagementHooksAsync
+    public interface ICpsSessionManagementHooksAsync
     {
         Task StoreCpsSessionId(string code, string userId);
 

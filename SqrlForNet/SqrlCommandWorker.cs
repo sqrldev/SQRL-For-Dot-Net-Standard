@@ -113,7 +113,6 @@ namespace SqrlForNet
                 BadCommand();
             }
             _logger.LogTrace("Removing NUT: {0}", Request.Query["nut"]);
-            Options.RemoveNutInternal(Request.Query["nut"], false);
         }
 
         private bool IsValidNutRequest()
@@ -180,7 +179,7 @@ namespace SqrlForNet
         {
             _logger.LogTrace("Getting status of NUT");
             var nut = Request.Query["nut"];
-            var nutInfo = Options.GetNutInternal(nut, false);
+            var nutInfo = Options.GetAndRemoveNutInternal(nut, Request.HttpContext);
 
             if (nutInfo == null)
             {
@@ -368,7 +367,7 @@ namespace SqrlForNet
             var opts = ParseOpts();
             if (!opts[OptKey.cps])
             {
-                var nutInfo = Options.GetNutInternal(nut, false);
+                var nutInfo = Options.GetAndRemoveNutInternal(nut, Request.HttpContext);
                 var authNutInfo = new NutInfo
                 {
                     FirstNut = nutInfo.FirstNut,
@@ -376,7 +375,7 @@ namespace SqrlForNet
                     IpAddress = nutInfo.IpAddress,
                     Idk = nutInfo.Idk
                 };
-                Options.StoreNutInternal(nut, authNutInfo, true);
+                Options.StoreNutInternal(nut, authNutInfo, true, Request.HttpContext);
                 return true;
             }
             return false;
@@ -747,7 +746,7 @@ namespace SqrlForNet
         {
             var checkNut = Request.Query["check"];
 
-            var isAuthorized = Options.CheckNutAuthorizedInternal(checkNut);
+            var isAuthorized = Options.RemoveAuthorizedNutInternal(checkNut, Request.HttpContext);
             if (!isAuthorized)
             {
                 var responseMessage = new StringBuilder();
@@ -817,7 +816,7 @@ namespace SqrlForNet
             _logger.LogTrace("Storing NUT");
 
             _logger.LogDebug("The NUT been stored is: {0}", nut);
-            Options.StoreNutInternal(nut, NewNutInfo(), false);
+            Options.StoreNutInternal(nut, NewNutInfo(), false, Request.HttpContext);
 
             _logger.LogTrace("NUT stored");
         }
@@ -827,7 +826,7 @@ namespace SqrlForNet
             NutInfo currentNut = null;
             if (Request.Query.ContainsKey("nut"))
             {
-                currentNut = Options.GetNutInternal(Request.Query["nut"], false);
+                currentNut = Options.GetAndRemoveNutInternal(Request.Query["nut"], Request.HttpContext);
             }
             return new NutInfo
             {
@@ -925,7 +924,7 @@ namespace SqrlForNet
         public string GenerateCpsCode()
         {
             var code = Guid.NewGuid().ToString("N");
-            Options.StoreCpsSessionIdInternal(code, GetClientParams()["idk"]);
+            Options.StoreCpsSessionIdInternal(code, GetClientParams()["idk"], Request.HttpContext);
             return code;
         }
 
