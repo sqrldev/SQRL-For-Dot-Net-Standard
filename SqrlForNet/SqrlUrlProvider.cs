@@ -114,6 +114,22 @@ namespace SqrlForNet
         {
             return response.HttpContext.Request.SqrlCheckUrl(path);
         }
+        
+        public static string GetRedirectUrl(HttpRequest request)
+        {
+            return request.HttpContext.Items["RedirectUrl"].ToString();
+        }
 
+        public static string SqrlRedirectUrl(this HttpRequest request)
+        {
+            return GetRedirectUrl(request);
+        }
+
+        public static string SqrlRedirectUrl(this HttpResponse response)
+        {
+            return response.HttpContext.Request.SqrlRedirectUrl();
+        }
+
+        
     }
 }

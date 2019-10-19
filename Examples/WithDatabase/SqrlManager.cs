@@ -121,6 +121,7 @@ namespace WithDatabase
             await _database.Nuts.AddAsync(new NutInfoData()
             {
                 Nut = nut,
+                Authorized = authorized,
                 CreatedDate = info.CreatedDate,
                 FirstNut = info.FirstNut,
                 Idk = info.Idk,
@@ -129,7 +130,7 @@ namespace WithDatabase
             await _database.SaveChangesAsync();
         }
 
-        public async Task<bool> RemoveAuthorizedNut(string nut, HttpContext context)
+        public async Task<NutInfo> RemoveAuthorizedNut(string nut, HttpContext context)
         {
             var _database = context.RequestServices.GetRequiredService<DatabaseContext>();
             var isAuthorized = await _database.Nuts.Where(x => x.Authorized).AnyAsync(x => x.Nut == nut || x.FirstNut == nut);
@@ -138,9 +139,9 @@ namespace WithDatabase
                 var authorizedNut = await _database.Nuts.Where(x => x.Authorized).SingleAsync(x => x.Nut == nut || x.FirstNut == nut);
                 _database.Nuts.Remove(authorizedNut);
                 await _database.SaveChangesAsync();
-                return true;
+                return authorizedNut;
             }
-            return false;
+            return null;
         }
 
         public async Task<string> GetNutIdk(string nut, HttpContext context)

@@ -12,5 +12,10 @@
         /// </summary>
         public bool AuthenticateSeparately;
 
+        /// <summary>
+        /// The path that is used to redirect to for this path
+        /// </summary>
+        public string RedirectToPath;
+
     }
 }

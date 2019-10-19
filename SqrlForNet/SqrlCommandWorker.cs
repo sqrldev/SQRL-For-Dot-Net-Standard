@@ -642,13 +642,15 @@ namespace SqrlForNet
             StoreNut(nut);
             var url = $"sqrl://{Request.Host}{Options.CallbackPath}?nut=" + nut;
             var checkUrl = $"{Request.Scheme}://{Request.Host}{Options.CallbackPath}?check=" + nut;
+            var redirectUrl = $"{Request.Scheme}://{Request.Host}{Options.RedirectPath}";
             var cancelUrl = Base64UrlTextEncoder.Encode(Encoding.ASCII.GetBytes($"{Request.Scheme}://{Request.Host}{Options.CancelledPath}"));
             var responseMessage = new StringBuilder();
             responseMessage.Append("{");
             responseMessage.Append("\"url\":\"" + url + "\",");
             responseMessage.Append("\"checkUrl\":\"" + checkUrl + "\",");
             responseMessage.Append("\"cancelUrl\":\"" + cancelUrl + "\",");
-            responseMessage.Append("\"qrCodeBase64\":\"" + GetBase64QrCode(url) + "\"");
+            responseMessage.Append("\"qrCodeBase64\":\"" + GetBase64QrCode(url) + "\",");
+            responseMessage.Append("\"redirectUrl\":\"" + redirectUrl + "\"");
 
             if (Options.OtherAuthenticationPaths != null && Options.OtherAuthenticationPaths.Any())
             {
@@ -659,13 +661,15 @@ namespace SqrlForNet
                     var xParam = optionsOtherAuthenticationPath.AuthenticateSeparately ? "x=" + (optionsOtherAuthenticationPath.Path.Length) + "&" : string.Empty;
                     var otherUrl = $"sqrl://{Request.Host}{optionsOtherAuthenticationPath.Path}?{xParam}nut={nut}";
                     var otherCheckUrl = $"{Request.Scheme}://{Request.Host}{optionsOtherAuthenticationPath.Path}?check=" + nut;
+                    var otherRedirectUrl = $"{Request.Scheme}://{Request.Host}{optionsOtherAuthenticationPath.RedirectToPath}";
                     var otherCancelUrl = Base64UrlTextEncoder.Encode(Encoding.ASCII.GetBytes($"{Request.Scheme}://{Request.Host}{optionsOtherAuthenticationPath.Path}"));
 
                     responseMessage.Append("{");
                     responseMessage.Append("\"url\":\"" + otherUrl + "\",");
                     responseMessage.Append("\"checkUrl\":\"" + otherCheckUrl + "\",");
                     responseMessage.Append("\"cancelUrl\":\"" + otherCancelUrl + "\",");
-                    responseMessage.Append("\"qrCodeBase64\":\"" + GetBase64QrCode(otherUrl) + "\"");
+                    responseMessage.Append("\"qrCodeBase64\":\"" + GetBase64QrCode(otherUrl) + "\",");
+                    responseMessage.Append("\"redirectUrl\":\"" + otherRedirectUrl + "\"");
                     responseMessage.Append("}");
                 }
 
@@ -688,17 +692,20 @@ namespace SqrlForNet
             var url = $"sqrl://{Request.Host}{Options.CallbackPath}?nut=" + nut;
             var qrCode = GetBase64QrCode(url);
             var checkUrl = $"{Request.Scheme}://{Request.Host}{Options.CallbackPath}?check=" + nut;
+            var redirectUrl = $"{Request.Scheme}://{Request.Host}{Options.RedirectPath}";
             
             _logger.LogTrace("Adding values to cache");
             _logger.LogDebug("The CallbackUrl is: {0}", url);
             _logger.LogDebug("The CheckMilliSeconds is: {0}", Options.CheckMilliSeconds);
             _logger.LogDebug("The CheckUrl is: {0}", checkUrl);
+            _logger.LogDebug("The RedirectUrl is: {0}", redirectUrl);
            
 
             Request.HttpContext.Items.Add("CallbackUrl", url);
             Request.HttpContext.Items.Add("QrData", qrCode);
             Request.HttpContext.Items.Add("CheckMilliSeconds", Options.CheckMilliSeconds);
             Request.HttpContext.Items.Add("CheckUrl", checkUrl);
+            Request.HttpContext.Items.Add("RedirectUrl", redirectUrl);
             if (Options.OtherAuthenticationPaths != null && Options.OtherAuthenticationPaths.Any())
             {
                 _logger.LogTrace("There are {0}", nameof(Options.OtherAuthenticationPaths));
@@ -711,13 +718,16 @@ namespace SqrlForNet
                     var xParam = optionsOtherAuthenticationPath.AuthenticateSeparately ? "x=" + (optionsOtherAuthenticationPath.Path.Length) + "&" : string.Empty;
                     var otherUrl = $"sqrl://{Request.Host}{optionsOtherAuthenticationPath.Path}?{xParam}nut={nut}";
                     var otherCheckUrl = $"{Request.Scheme}://{Request.Host}{optionsOtherAuthenticationPath.Path}?check=" + nut;
+                    var otherRedirectUrl = $"{Request.Scheme}://{Request.Host}{optionsOtherAuthenticationPath.RedirectToPath}";
 
                     _logger.LogDebug("The CallbackUrl is: {0}", otherUrl);
                     _logger.LogDebug("The CheckUrl is: {0}", otherCheckUrl);
+                    _logger.LogDebug("The RedirectUrl is: {0}", otherRedirectUrl);
 
                     otherUrls.Add(new OtherUrlsData()
                     {
                         Path = optionsOtherAuthenticationPath.Path,
+                        RedirectUrl = otherRedirectUrl,
                         Url = otherUrl,
                         CheckUrl = otherCheckUrl,
                         QrCodeBase64 = GetBase64QrCode(otherUrl)
@@ -742,12 +752,12 @@ namespace SqrlForNet
             return stream.ToArray();
         }
         
-        public bool CheckPage()
+        public NutInfo CheckPage()
         {
             var checkNut = Request.Query["check"];
 
-            var isAuthorized = Options.RemoveAuthorizedNutInternal(checkNut, Request.HttpContext);
-            if (!isAuthorized)
+            var removedNutInfo = Options.RemoveAuthorizedNutInternal(checkNut, Request.HttpContext);
+            if (removedNutInfo == null)
             {
                 var responseMessage = new StringBuilder();
                 responseMessage.Append("false");
@@ -757,7 +767,7 @@ namespace SqrlForNet
                 Response.ContentLength = responseMessageBytes.LongLength;
                 Response.Body.WriteAsync(responseMessageBytes, 0, responseMessageBytes.Length);
             }
-            return isAuthorized;
+            return removedNutInfo;
         }
 
         private void SendResponse(Tif tifValue, bool includeCpsUrl = false)
@@ -912,15 +922,9 @@ namespace SqrlForNet
         private string GenerateNut(byte[] key)
         {
             _logger.LogTrace("Generating a NUT");
-            var now = DateTime.UtcNow;
-            var counter = now.Day.ToString("00") + now.Month.ToString("00") + now.Year.ToString() + now.Ticks.ToString();//This is always be unique as day month and year will always go up and ticks will be unique on the day
-            _logger.LogDebug("Counter is currently {0}", counter);
-            var blowFish = new BlowFish(key);
-
-            var cipherText = blowFish.EncryptCBC(counter.ToString());
-            return Base64UrlTextEncoder.Encode(Encoding.ASCII.GetBytes(cipherText));
+            return Base64UrlTextEncoder.Encode(Encoding.ASCII.GetBytes(Guid.NewGuid().ToString("N")));
         }
-
+        
         public string GenerateCpsCode()
         {
             var code = Guid.NewGuid().ToString("N");
