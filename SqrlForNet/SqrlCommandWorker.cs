@@ -736,7 +736,7 @@ namespace SqrlForNet
         private byte[] GetBase64QrCodeData(string url)
         {
             var qrCode = QrCode.EncodeText(url, QrCode.Ecc.High);
-            var img = qrCode.ToBitmap(3, 1);
+            var img = qrCode.ToBitmap(3, 3);
             MemoryStream stream = new MemoryStream();
             img.Save(stream, ImageFormat.Bmp);
             return stream.ToArray();
