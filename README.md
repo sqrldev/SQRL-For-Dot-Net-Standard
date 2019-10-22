@@ -65,5 +65,6 @@ Join the workspace here: https://join.slack.com/t/sqrlfornet/shared_invite/enQtN
 | 0.9.0   | Examples of NUT storage and management | Released |
 | 1.0.0   | Add options for SqrlOnly and Hardlock | Released |
 | 1.1.0   | Add Ask capability | Released |
-| 1.2.0   | <ul><li>Add async hooks for cleaner database operations</li><li>Add logging</li></ul> | Developing |
-| 1.3.0   | Add rate limits for specific queries By IP address
+| 1.2.0   | <ul><li>Add async hooks for cleaner database operations</li><li>Add logging</li></ul> | Released |
+| 1.3.0   | Change to how hooks work and added HTTPContext access to all hooks | Released |
+| 1.4.0   | Imporve the QR code for high resolution devices | Developing |
