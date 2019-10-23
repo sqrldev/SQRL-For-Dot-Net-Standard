@@ -122,23 +122,20 @@ namespace SqrlForNet
         private Task<HandleRequestResult> CheckRequest()
         {
             var result = CommandWorker.CheckPage();
-            if (result)
+            if (result != null)
             {
                 Logger.LogTrace("User is authorized and can be logged in");
-                var userId = Options.GetNutIdkInternal(Request.Query["check"], Context);
-                var username = Options.GetUsernameInternal(userId, Context);
+                var username = Options.GetUsernameInternal(result.Idk, Context);
                 var claims = new[] {
-                    new Claim(ClaimTypes.NameIdentifier, userId),
+                    new Claim(ClaimTypes.NameIdentifier, result.Idk),
                     new Claim(ClaimTypes.Name, username)
                 };
-                Logger.LogDebug("The userId is: {0}", userId);
+                Logger.LogDebug("The userId is: {0}", result.Idk);
                 Logger.LogDebug("The username is: {0}", username);
 
                 var identity = new ClaimsIdentity(claims, Scheme.Name);
                 var principal = new ClaimsPrincipal(identity);
                 var ticket = new AuthenticationTicket(principal, Scheme.Name);
-
-                Options.Events.TicketReceived(new TicketReceivedContext(Context, Scheme, Options, ticket));
 
                 return Task.FromResult(HandleRequestResult.Success(ticket));
             }

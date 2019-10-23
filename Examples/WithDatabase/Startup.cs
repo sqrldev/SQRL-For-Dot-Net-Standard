@@ -50,7 +50,6 @@ namespace WithDatabase
                     options.GetUsernameAsync = new SqrlManager().GetUsername;
                     options.GetAndRemoveNutAsync = new SqrlManager().GetAndRemoveNut;
                     options.StoreNutAsync = new SqrlManager().StoreNut;
-                    options.GetNutIdkAsync = new SqrlManager().GetNutIdk;
                     options.RemoveAuthorizedNutAsync = new SqrlManager().RemoveAuthorizedNut;
                     options.Events.OnTicketReceived += OnTicketReceived;
                 });

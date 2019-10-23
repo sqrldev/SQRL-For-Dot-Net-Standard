@@ -11,6 +11,7 @@ namespace SqrlForNet
         internal string Url;
         internal string CheckUrl;
         internal string QrCodeBase64;
+        internal string RedirectUrl;
 
     }
 }

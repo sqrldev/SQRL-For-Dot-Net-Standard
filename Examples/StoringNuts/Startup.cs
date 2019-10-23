@@ -45,7 +45,6 @@ namespace StoringNuts
                     //These are used to manage nuts
                     options.StoreNut = StoreNut;
                     options.GetAndRemoveNut = GetAndRemoveNut;
-                    options.GetNutIdk = GetNutIdk;
                     options.RemoveAuthorizedNut = RemoveAuthorizedNut;
 
                     options.StoreCpsSessionId = StoreCpsSessionId;
@@ -178,15 +177,15 @@ namespace StoringNuts
             }
         }
 
-        private bool RemoveAuthorizedNut(string nut, HttpContext httpContext)
+        private NutInfo RemoveAuthorizedNut(string nut, HttpContext httpContext)
         {
             var authorizedNut = AuthorizedNutList.SingleOrDefault(x => x.Key == nut || x.Value.FirstNut == nut);
             if (authorizedNut.Key == nut)
             {
                 AuthorizedNutList.Remove(nut);
-                return true;
+                return authorizedNut.Value;
             }
-            return false;
+            return authorizedNut.Value;
         }
 
         private string GetNutIdk(string nut, HttpContext httpContext)
