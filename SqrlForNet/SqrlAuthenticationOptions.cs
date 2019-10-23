@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Http;
+using Net.Codecrete.QrCodeGenerator;
 
 namespace SqrlForNet
 {
@@ -31,7 +32,25 @@ namespace SqrlForNet
         public bool EnableHelpers { get; set; }
 
         public string[] HelpersPaths { get; set; }
+        
+        public int QrCodeBorderSize { get; set; }
+        
+        public int QrCodeScale { get; set; }
+        
+        public EccLevel QrCodeErrorCorrectionLevel { get; set; }
 
+        internal QrCode.Ecc GetQrCodeErrorCorrectionLevel()
+        {
+            switch (QrCodeErrorCorrectionLevel)
+            {
+                case EccLevel.Low: return QrCode.Ecc.Low;
+                case EccLevel.Medium: return QrCode.Ecc.Medium;
+                case EccLevel.Quartile: return QrCode.Ecc.Quartile;
+                case EccLevel.High: return QrCode.Ecc.High;
+                default: throw new ArgumentOutOfRangeException();
+            }
+        }
+        
         public OtherAuthenticationPath[] OtherAuthenticationPaths { get; set; }
         
         public Func<string, HttpContext, UserLookUpResult> UserExists;
@@ -485,6 +504,9 @@ namespace SqrlForNet
             CallbackPath = "/login-sqrl";
             NutExpiresInSeconds = 60;
             CheckMilliSeconds = 1000;
+            QrCodeBorderSize = 1;
+            QrCodeScale = 3;
+            QrCodeErrorCorrectionLevel = EccLevel.Low;
             NameForAnonymous = "SQRL anonymous user";
             Diagnostics = false;
 
@@ -507,6 +529,16 @@ namespace SqrlForNet
                 throw new ArgumentException($"{nameof(NutExpiresInSeconds)} must be grater than 0 so that a SQRL client can have a chance to communicate, we suggest a value of 60");
             }
 
+            if (QrCodeBorderSize < 1)
+            {
+                throw new ArgumentException($"{nameof(QrCodeBorderSize)} must be 1 or higher.");
+            }
+
+            if (QrCodeScale < 1)
+            {
+                throw new ArgumentException($"{nameof(QrCodeScale)} must be 1 or higher.");
+            }
+            
             if (!CallbackPath.HasValue || string.IsNullOrEmpty(CallbackPath))
             {
                 throw new ArgumentException($"{nameof(CallbackPath)} this should have a value");
@@ -526,9 +558,9 @@ namespace SqrlForNet
             {
                 foreach (var otherAuthenticationPath in OtherAuthenticationPaths)
                 {
-                    if (OtherAuthenticationPaths.Count(y => y == otherAuthenticationPath) > 1)
+                    if (OtherAuthenticationPaths.Count(y => y.Path == otherAuthenticationPath.Path) > 1)
                     {
-                        throw new ArgumentException($"{nameof(OtherAuthenticationPaths)} is entered more than once");
+                        throw new ArgumentException($"{otherAuthenticationPath.Path} is entered more than once in {nameof(OtherAuthenticationPaths)}");
                     }
 
                     if (!otherAuthenticationPath.Path.StartsWith("/"))
@@ -543,6 +575,11 @@ namespace SqrlForNet
                 }
             }
 
+            if (EnableHelpers && HelpersPaths == null)
+            {
+                throw new ArgumentException($"{nameof(HelpersPaths)} must have at least one path.");
+            }
+            
             if (HelpersPaths != null)
             {
                 foreach (var helpersPath in HelpersPaths)
