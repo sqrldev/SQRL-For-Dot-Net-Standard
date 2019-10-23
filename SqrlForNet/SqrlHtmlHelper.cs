@@ -57,7 +57,7 @@ namespace SqrlForNet
                 script.InnerHtml.AppendHtml("{");
                 script.InnerHtml.AppendHtml("if(this.responseText !== \"false\")");
                 script.InnerHtml.AppendHtml("{");
-                script.InnerHtml.AppendHtml("window.location = \"" + request.HttpContext.Items["CheckUrl"] + "\";");
+                script.InnerHtml.AppendHtml("window.location = \"" + request.HttpContext.Items["RedirectUrl"] + "\";");
                 script.InnerHtml.AppendHtml("}");
                 script.InnerHtml.AppendHtml("}");
                 script.InnerHtml.AppendHtml("};");
@@ -121,7 +121,7 @@ namespace SqrlForNet
                 script.InnerHtml.AppendHtml("{");
                 script.InnerHtml.AppendHtml("if(this.responseText !== \"false\")");
                 script.InnerHtml.AppendHtml("{");
-                script.InnerHtml.AppendHtml("window.location = \"" + otherUrl.CheckUrl + "\";");
+                script.InnerHtml.AppendHtml("window.location = \"" + otherUrl.RedirectUrl + "\";");
                 script.InnerHtml.AppendHtml("}");
                 script.InnerHtml.AppendHtml("}");
                 script.InnerHtml.AppendHtml("};");
@@ -167,7 +167,7 @@ namespace SqrlForNet
                 script.InnerHtml.AppendHtml("{");
                 script.InnerHtml.AppendHtml("if(this.responseText !== \"false\")");
                 script.InnerHtml.AppendHtml("{");
-                script.InnerHtml.AppendHtml("window.location = \"" + request.HttpContext.Items["CheckUrl"] + "\";");
+                script.InnerHtml.AppendHtml("window.location = \"" + request.HttpContext.Items["RedirectUrl"] + "\";");
                 script.InnerHtml.AppendHtml("}");
                 script.InnerHtml.AppendHtml("}");
                 script.InnerHtml.AppendHtml("};");
@@ -211,7 +211,7 @@ namespace SqrlForNet
                 script.InnerHtml.AppendHtml("{");
                 script.InnerHtml.AppendHtml("if(this.responseText !== \"false\")");
                 script.InnerHtml.AppendHtml("{");
-                script.InnerHtml.AppendHtml("window.location = \"" + otherUrl.CheckUrl + "\";");
+                script.InnerHtml.AppendHtml("window.location = \"" + otherUrl.RedirectUrl + "\";");
                 script.InnerHtml.AppendHtml("}");
                 script.InnerHtml.AppendHtml("}");
                 script.InnerHtml.AppendHtml("};");

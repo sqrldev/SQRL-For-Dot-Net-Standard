@@ -9,7 +9,7 @@ namespace SqrlForNet.Interfaces
 
         void StoreNut(string nut, NutInfo info, bool authorized, HttpContext context);
 
-        bool RemoveAuthorizedNut(string nut, HttpContext context);
+        NutInfo RemoveAuthorizedNut(string nut, HttpContext context);
 
         string GetNutIdk(string nut, HttpContext context);
 
@@ -21,7 +21,7 @@ namespace SqrlForNet.Interfaces
 
         Task StoreNut(string nut, NutInfo info, bool authorized, HttpContext context);
 
-        Task<bool> RemoveAuthorizedNut(string nut, HttpContext context);
+        Task<NutInfo> RemoveAuthorizedNut(string nut, HttpContext context);
 
         Task<string> GetNutIdk(string nut, HttpContext context);
 
