@@ -47,7 +47,7 @@ else
                 sqrlDiv.appendChild(loginLink);
                 sqrlDiv.appendChild(qrCodeImage);
 
-                setInterval(function () { CheckAuto(data["checkUrl"]); }, 10000);
+                setInterval(function () { CheckAuto(data["checkUrl"], data["redirectUrl"]); }, 1000);
 
             }
         };
@@ -55,12 +55,12 @@ else
         xhttp.send();
     }
 
-    function CheckAuto(checkUrl) {
+    function CheckAuto(checkUrl, redirectPath) {
             var xhttp = new XMLHttpRequest();
             xhttp.onreadystatechange = function() {{
             if (this.readyState == 4 && this.status == 200) {
                 if(this.responseText !== "false"){
-                    window.location = checkUrl;
+                    window.location = redirectPath;
                 }
             }
             }};

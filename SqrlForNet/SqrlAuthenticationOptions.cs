@@ -21,6 +21,8 @@ namespace SqrlForNet
         public string NameForAnonymous { get; set; }
 
         public string CancelledPath { get; set; }
+
+        public string RedirectPath { get; set; }
         
         public bool Diagnostics { get; set; }
         
@@ -217,11 +219,11 @@ namespace SqrlForNet
             }
         }
 
-        public Func<string, HttpContext, bool> RemoveAuthorizedNut;
+        public Func<string, HttpContext, NutInfo> RemoveAuthorizedNut;
 
-        public Func<string, HttpContext, Task<bool>> RemoveAuthorizedNutAsync;
+        public Func<string, HttpContext, Task<NutInfo>> RemoveAuthorizedNutAsync;
 
-        internal bool RemoveAuthorizedNutInternal(string nut, HttpContext context)
+        internal NutInfo RemoveAuthorizedNutInternal(string nut, HttpContext context)
         {
             if (RemoveAuthorizedNut != null)
             {
@@ -236,28 +238,6 @@ namespace SqrlForNet
             else
             {
                 return RemoveAuthorizedNutMethod(nut, context);
-            }
-        }
-
-        public Func<string, HttpContext, string> GetNutIdk;
-
-        public Func<string, HttpContext, Task<string>> GetNutIdkAsync;
-
-        internal string GetNutIdkInternal(string nut, HttpContext context)
-        {
-            if (GetNutIdk != null)
-            {
-                return GetNutIdk.Invoke(nut, context);
-            }
-            else if (GetNutIdkAsync != null)
-            {
-                var task = GetNutIdkAsync.Invoke(nut, context);
-                task.Wait();
-                return task.Result;
-            }
-            else
-            {
-                return GetNutIdkMethod(nut, context);
             }
         }
 
@@ -453,7 +433,7 @@ namespace SqrlForNet
             }
         }
 
-        private bool RemoveAuthorizedNutMethod(string nut, HttpContext httpContext)
+        private NutInfo RemoveAuthorizedNutMethod(string nut, HttpContext httpContext)
         {
             ClearOldNuts();
             lock (AuthorizedNutList)
@@ -462,9 +442,9 @@ namespace SqrlForNet
                 if (authorizedNut.Key == nut)
                 {
                     AuthorizedNutList.Remove(authorizedNut.Key);
-                    return true;
+                    return authorizedNut.Value;
                 }
-                return false;
+                return authorizedNut.Value;
             }
         }
 
@@ -508,7 +488,7 @@ namespace SqrlForNet
             NameForAnonymous = "SQRL anonymous user";
             Diagnostics = false;
 
-            EncryptionKey = new byte[56];
+            EncryptionKey = new byte[8];
             RandomNumberGenerator.Create().GetBytes(EncryptionKey);
 
             Events = new RemoteAuthenticationEvents();
@@ -537,6 +517,11 @@ namespace SqrlForNet
                 throw new ArgumentException($"{nameof(CallbackPath)} must have a '/' at the start");
             }
 
+            if (!string.IsNullOrEmpty(RedirectPath) && !RedirectPath.StartsWith("/"))
+            {
+                throw new ArgumentException($"{nameof(RedirectPath)} must have a '/' at the start");
+            }
+
             if (OtherAuthenticationPaths != null)
             {
                 foreach (var otherAuthenticationPath in OtherAuthenticationPaths)
@@ -548,7 +533,12 @@ namespace SqrlForNet
 
                     if (!otherAuthenticationPath.Path.StartsWith("/"))
                     {
-                        throw new ArgumentException($"{otherAuthenticationPath} in {nameof(OtherAuthenticationPaths)} must have a '/' at the start");
+                        throw new ArgumentException($"{otherAuthenticationPath.Path} in {nameof(OtherAuthenticationPaths)} must have a '/' at the start");
+                    }
+
+                    if (otherAuthenticationPath.RedirectToPath != null && !otherAuthenticationPath.RedirectToPath.StartsWith("/"))
+                    {
+                        throw new ArgumentException($"{otherAuthenticationPath.RedirectToPath} in {nameof(OtherAuthenticationPaths)} must have a '/' at the start");
                     }
                 }
             }
