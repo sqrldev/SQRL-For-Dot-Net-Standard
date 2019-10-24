@@ -31,7 +31,7 @@ namespace SqrlForNet
         
         public bool EnableHelpers { get; set; }
 
-        public string[] HelpersPaths { get; set; }
+        public PathString[] HelpersPaths { get; set; }
         
         public int QrCodeBorderSize { get; set; }
         
@@ -569,21 +569,16 @@ namespace SqrlForNet
 
             if (EnableHelpers && HelpersPaths == null)
             {
-                throw new ArgumentException($"{nameof(HelpersPaths)} must have at least one path.");
+                throw new ArgumentException($"{nameof(HelpersPaths)} must have at least one path when {nameof(EnableHelpers)} is true.");
             }
             
             if (HelpersPaths != null)
             {
                 foreach (var helpersPath in HelpersPaths)
                 {
-                    if (HelpersPaths.Count(y => y == helpersPath) > 1)
+                    if (HelpersPaths.Count(y => y == helpersPath.Value) > 1)
                     {
-                        throw new ArgumentException($"{nameof(HelpersPaths)} is entered more than once");
-                    }
-
-                    if (!helpersPath.StartsWith("/"))
-                    {
-                        throw new ArgumentException($"{helpersPath} in {nameof(HelpersPaths)} must have a '/' at the start");
+                        throw new ArgumentException($"{helpersPath.Value} is entered more than once in {nameof(HelpersPaths)}");
                     }
                 }
             }

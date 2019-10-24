@@ -1,5 +1,6 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
+using Microsoft.AspNetCore.Http;
 using NUnit.Framework;
 using SqrlForNet;
 
@@ -94,6 +95,25 @@ namespace UnitTests
                 }
             };
             Assert.That(_classUnderTest.Validate, Throws.TypeOf<ArgumentException>().With.Message.EqualTo("/DuplicatePath is entered more than once in OtherAuthenticationPaths\r\n/DuplicatePath is entered more than once in OtherAuthenticationPaths\r\n"));
+        }
+
+        [Test]
+        public void Should_ThrowArgumentException_When_HelpersIsEnabledButHelpersPathsIsNull()
+        {
+            _classUnderTest.EnableHelpers = true;
+            _classUnderTest.HelpersPaths = null;
+            Assert.That(_classUnderTest.Validate, Throws.TypeOf<ArgumentException>().With.Message.EqualTo("HelpersPaths must have at least one path when EnableHelpers is true."));
+        }
+
+        [Test]
+        public void Should_ThrowArgumentException_When_HelpersIsEnabledButDuplicateHelpPathDefined()
+        {
+            _classUnderTest.EnableHelpers = true;
+            _classUnderTest.HelpersPaths = new[]
+            {
+                new PathString("/unit/test"),
+            };
+            Assert.That(_classUnderTest.Validate, Throws.TypeOf<ArgumentException>().With.Message.EqualTo("UserExists should be set so that you can validate users"));
         }
 
     }
