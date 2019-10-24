@@ -1,6 +1,9 @@
-﻿namespace SqrlForNet.Chaos.NaCl.Internal.Ed25519Ref10
+﻿using System.Diagnostics.CodeAnalysis;
+
+namespace SqrlForNet.Chaos.NaCl.Internal.Ed25519Ref10
 {
-    internal static partial class LookupTables
+    
+ internal static partial class LookupTables
     {
         internal static readonly GroupElementPreComp[] Base2 = new GroupElementPreComp[]{
             new GroupElementPreComp(

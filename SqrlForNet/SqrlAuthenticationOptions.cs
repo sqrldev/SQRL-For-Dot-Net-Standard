@@ -23,7 +23,7 @@ namespace SqrlForNet
 
         public string CancelledPath { get; set; }
 
-        public string RedirectPath { get; set; }
+        public PathString RedirectPath { get; set; }
         
         public bool Diagnostics { get; set; }
         
@@ -541,37 +541,29 @@ namespace SqrlForNet
             
             if (!CallbackPath.HasValue || string.IsNullOrEmpty(CallbackPath))
             {
-                throw new ArgumentException($"{nameof(CallbackPath)} this should have a value");
-            }
-
-            if (!CallbackPath.Value.StartsWith("/"))
-            {
-                throw new ArgumentException($"{nameof(CallbackPath)} must have a '/' at the start");
-            }
-
-            if (!string.IsNullOrEmpty(RedirectPath) && !RedirectPath.StartsWith("/"))
-            {
-                throw new ArgumentException($"{nameof(RedirectPath)} must have a '/' at the start");
+                throw new ArgumentException($"The {nameof(CallbackPath)} should have a value");
             }
 
             if (OtherAuthenticationPaths != null)
             {
+                var errorList = new List<string>();
                 foreach (var otherAuthenticationPath in OtherAuthenticationPaths)
                 {
+                    if (!otherAuthenticationPath.Path.HasValue)
+                    {
+                        throw new ArgumentException($"One of the {nameof(OtherAuthenticationPath)} needs a path defining as it currently doesn't have one");
+                    }
+                    
                     if (OtherAuthenticationPaths.Count(y => y.Path == otherAuthenticationPath.Path) > 1)
                     {
-                        throw new ArgumentException($"{otherAuthenticationPath.Path} is entered more than once in {nameof(OtherAuthenticationPaths)}");
+                        errorList.Add($"{otherAuthenticationPath.Path} is entered more than once in {nameof(OtherAuthenticationPaths)}\r\n");
                     }
+                    
+                }
 
-                    if (!otherAuthenticationPath.Path.StartsWith("/"))
-                    {
-                        throw new ArgumentException($"{otherAuthenticationPath.Path} in {nameof(OtherAuthenticationPaths)} must have a '/' at the start");
-                    }
-
-                    if (otherAuthenticationPath.RedirectToPath != null && !otherAuthenticationPath.RedirectToPath.StartsWith("/"))
-                    {
-                        throw new ArgumentException($"{otherAuthenticationPath.RedirectToPath} in {nameof(OtherAuthenticationPaths)} must have a '/' at the start");
-                    }
+                if (errorList.Any())
+                {
+                    throw new ArgumentException(errorList.Aggregate((current, next) => current + next));
                 }
             }
 

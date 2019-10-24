@@ -1,8 +1,10 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using SqrlForNet.Chaos.NaCl.Internal.Ed25519Ref10;
 
 namespace SqrlForNet.Chaos.NaCl
 {
+    [ExcludeFromCodeCoverage]
     public static class Ed25519
     {
         /// <summary>

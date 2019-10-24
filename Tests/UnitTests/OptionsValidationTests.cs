@@ -1,9 +1,11 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
 using NUnit.Framework;
 using SqrlForNet;
 
 namespace UnitTests
 {
+    [ExcludeFromCodeCoverage]
     public class OptionsValidationTests
     {
 
@@ -39,51 +41,60 @@ namespace UnitTests
         [Test]
         public void Should_ThrowArgumentException_When_QrCodeBorderSizeLessThan1()
         {
-            Assert.That(_classUnderTest.Validate, Throws.TypeOf<ArgumentException>().With.Message.EqualTo(""));
+            _classUnderTest.QrCodeBorderSize = 0;
+            Assert.That(_classUnderTest.Validate, Throws.TypeOf<ArgumentException>().With.Message.EqualTo("QrCodeBorderSize must be 1 or higher."));
         }
 
         [Test]
         public void Should_ThrowArgumentException_When_QrCodeScaleLessThan1()
         {
-            Assert.That(_classUnderTest.Validate, Throws.TypeOf<ArgumentException>().With.Message.EqualTo(""));
+            _classUnderTest.QrCodeScale = 0;
+            Assert.That(_classUnderTest.Validate, Throws.TypeOf<ArgumentException>().With.Message.EqualTo("QrCodeScale must be 1 or higher."));
         }
 
         [Test]
         public void Should_ThrowArgumentException_When_CallbackPathIsNull()
         {
-            Assert.That(_classUnderTest.Validate, Throws.TypeOf<ArgumentException>().With.Message.EqualTo(""));
+            _classUnderTest.CallbackPath = null;
+            Assert.That(_classUnderTest.Validate, Throws.TypeOf<ArgumentException>().With.Message.EqualTo("The CallbackPath should have a value"));
         }
 
         [Test]
         public void Should_ThrowArgumentException_When_CallbackPathIsEmpty()
         {
-            Assert.That(_classUnderTest.Validate, Throws.TypeOf<ArgumentException>().With.Message.EqualTo(""));
+            _classUnderTest.CallbackPath = string.Empty;
+            Assert.That(_classUnderTest.Validate, Throws.TypeOf<ArgumentException>().With.Message.EqualTo("The CallbackPath should have a value"));
         }
 
         [Test]
-        public void Should_ThrowArgumentException_When_CallbackPathNotHaveABackslashAtTheStart()
+        public void Should_ThrowArgumentException_When_OtherAuthenticationPathIsNull()
         {
-            Assert.That(_classUnderTest.Validate, Throws.TypeOf<ArgumentException>().With.Message.EqualTo(""));
+            _classUnderTest.OtherAuthenticationPaths = new[]
+            {
+                new OtherAuthenticationPath()
+                {
+                    Path = null
+                }
+            };
+            Assert.That(_classUnderTest.Validate, Throws.TypeOf<ArgumentException>().With.Message.EqualTo("One of the OtherAuthenticationPath needs a path defining as it currently doesn't have one"));
         }
-
-        [Test]
-        public void Should_ThrowArgumentException_When_RedirectPathIsSetButDoesNotStartWithBackslash()
-        {
-            Assert.That(_classUnderTest.Validate, Throws.TypeOf<ArgumentException>().With.Message.EqualTo(""));
-        }
-
+        
         [Test]
         public void Should_ThrowArgumentException_When_OtherAuthenticationPathsHasADuplicatePath()
         {
-            Assert.That(_classUnderTest.Validate, Throws.TypeOf<ArgumentException>().With.Message.EqualTo(""));
+            _classUnderTest.OtherAuthenticationPaths = new[]
+            {
+                new OtherAuthenticationPath()
+                {
+                    Path = "/DuplicatePath"
+                },
+                new OtherAuthenticationPath()
+                {
+                    Path = "/DuplicatePath"
+                }
+            };
+            Assert.That(_classUnderTest.Validate, Throws.TypeOf<ArgumentException>().With.Message.EqualTo("/DuplicatePath is entered more than once in OtherAuthenticationPaths\r\n/DuplicatePath is entered more than once in OtherAuthenticationPaths\r\n"));
         }
 
-        [Test]
-        public void Should_ThrowArgumentException_When_OtherAuthenticationPathsEntryDoesNotHaveABackslashAtTheStart()
-        {
-            Assert.That(_classUnderTest.Validate, Throws.TypeOf<ArgumentException>().With.Message.EqualTo(""));
-        }
-        
-        
     }
 }

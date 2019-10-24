@@ -1,7 +1,9 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 
 namespace SqrlForNet.Chaos.NaCl.Internal.Ed25519Ref10
 {
+	[ExcludeFromCodeCoverage]
 	internal static partial class Ed25519Operations
 	{
 		public static void crypto_sign(

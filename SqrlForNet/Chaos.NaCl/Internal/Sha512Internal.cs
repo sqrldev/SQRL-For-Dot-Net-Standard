@@ -1,5 +1,8 @@
-﻿namespace SqrlForNet.Chaos.NaCl.Internal
+﻿using System.Diagnostics.CodeAnalysis;
+
+namespace SqrlForNet.Chaos.NaCl.Internal
 {
+    [ExcludeFromCodeCoverage]
     internal static class Sha512Internal
     {
         private static readonly ulong[] K = new ulong[]
