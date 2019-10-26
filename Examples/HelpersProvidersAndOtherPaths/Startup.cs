@@ -44,6 +44,11 @@ namespace HelpersProvidersAndOtherPaths
                     options.Diagnostics = true;
                     options.DisableDefaultLoginPage = true;
                     options.EnableHelpers = true;
+                    options.HelpersPaths = new[]
+                    {
+                        new PathString("/"),
+                        new PathString("/OtherPathPage"),
+                    };
                     options.OtherAuthenticationPaths = new OtherAuthenticationPath[]
                     {
                         new OtherAuthenticationPath()
