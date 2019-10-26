@@ -1,5 +1,8 @@
-﻿namespace SqrlForNet.Chaos.NaCl.Internal.Ed25519Ref10
+﻿using System.Diagnostics.CodeAnalysis;
+
+namespace SqrlForNet.Chaos.NaCl.Internal.Ed25519Ref10
 {
+	[ExcludeFromCodeCoverage]
 	public static class MontgomeryOperations
 	{
 		public static void scalarmult(

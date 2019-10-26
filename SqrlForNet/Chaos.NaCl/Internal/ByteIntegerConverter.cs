@@ -1,8 +1,11 @@
-﻿namespace SqrlForNet.Chaos.NaCl.Internal
+﻿using System.Diagnostics.CodeAnalysis;
+
+namespace SqrlForNet.Chaos.NaCl.Internal
 {
     // Loops? Arrays? Never heard of that stuff
     // Library avoids unnecessary heap allocations and unsafe code
     // so this ugly code becomes necessary :(
+    [ExcludeFromCodeCoverage]
     internal static class ByteIntegerConverter
     {
         public static ulong LoadBigEndian64(byte[] buf, int offset)

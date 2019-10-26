@@ -44,6 +44,11 @@ namespace AskMessageExample
                     options.Diagnostics = true;
                     options.DisableDefaultLoginPage = true;
                     options.EnableHelpers = true;
+                    options.HelpersPaths = new[]
+                    {
+                        new PathString("/"),
+                        new PathString("/MessageMe")
+                    };
                     options.OtherAuthenticationPaths = new OtherAuthenticationPath[]
                     {
                         new OtherAuthenticationPath()

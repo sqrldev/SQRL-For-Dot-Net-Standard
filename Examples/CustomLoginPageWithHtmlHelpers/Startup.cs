@@ -44,6 +44,10 @@ namespace CustomLoginPageWithHtmlHelpers
                     options.Diagnostics = true;
                     options.DisableDefaultLoginPage = true;
                     options.EnableHelpers = true;
+                    options.HelpersPaths = new[]
+                    {
+                        new PathString("/"),
+                    };
                 });
 
             services.AddMvc(options =>

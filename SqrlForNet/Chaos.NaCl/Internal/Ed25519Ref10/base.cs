@@ -1,5 +1,8 @@
-﻿namespace SqrlForNet.Chaos.NaCl.Internal.Ed25519Ref10
+﻿using System.Diagnostics.CodeAnalysis;
+
+namespace SqrlForNet.Chaos.NaCl.Internal.Ed25519Ref10
 {
+    [ExcludeFromCodeCoverage]
     internal static partial class LookupTables
     {
         /* base[i][j] = (j+1)*256^i*B */
