@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Http;
+using Net.Codecrete.QrCodeGenerator;
 
 namespace SqrlForNet
 {
@@ -22,7 +23,7 @@ namespace SqrlForNet
 
         public string CancelledPath { get; set; }
 
-        public string RedirectPath { get; set; }
+        public PathString RedirectPath { get; set; }
         
         public bool Diagnostics { get; set; }
         
@@ -30,8 +31,26 @@ namespace SqrlForNet
         
         public bool EnableHelpers { get; set; }
 
-        public string[] HelpersPaths { get; set; }
+        public PathString[] HelpersPaths { get; set; }
+        
+        public int QrCodeBorderSize { get; set; }
+        
+        public int QrCodeScale { get; set; }
+        
+        public EccLevel QrCodeErrorCorrectionLevel { get; set; }
 
+        internal QrCode.Ecc GetQrCodeErrorCorrectionLevel()
+        {
+            switch (QrCodeErrorCorrectionLevel)
+            {
+                case EccLevel.Low: return QrCode.Ecc.Low;
+                case EccLevel.Medium: return QrCode.Ecc.Medium;
+                case EccLevel.Quartile: return QrCode.Ecc.Quartile;
+                case EccLevel.High: return QrCode.Ecc.High;
+                default: throw new ArgumentOutOfRangeException();
+            }
+        }
+        
         public OtherAuthenticationPath[] OtherAuthenticationPaths { get; set; }
         
         public Func<string, HttpContext, UserLookUpResult> UserExists;
@@ -485,6 +504,9 @@ namespace SqrlForNet
             CallbackPath = "/login-sqrl";
             NutExpiresInSeconds = 60;
             CheckMilliSeconds = 1000;
+            QrCodeBorderSize = 1;
+            QrCodeScale = 3;
+            QrCodeErrorCorrectionLevel = EccLevel.Low;
             NameForAnonymous = "SQRL anonymous user";
             Diagnostics = false;
 
@@ -507,54 +529,56 @@ namespace SqrlForNet
                 throw new ArgumentException($"{nameof(NutExpiresInSeconds)} must be grater than 0 so that a SQRL client can have a chance to communicate, we suggest a value of 60");
             }
 
+            if (QrCodeBorderSize < 1)
+            {
+                throw new ArgumentException($"{nameof(QrCodeBorderSize)} must be 1 or higher.");
+            }
+
+            if (QrCodeScale < 1)
+            {
+                throw new ArgumentException($"{nameof(QrCodeScale)} must be 1 or higher.");
+            }
+            
             if (!CallbackPath.HasValue || string.IsNullOrEmpty(CallbackPath))
             {
-                throw new ArgumentException($"{nameof(CallbackPath)} this should have a value");
-            }
-
-            if (!CallbackPath.Value.StartsWith("/"))
-            {
-                throw new ArgumentException($"{nameof(CallbackPath)} must have a '/' at the start");
-            }
-
-            if (!string.IsNullOrEmpty(RedirectPath) && !RedirectPath.StartsWith("/"))
-            {
-                throw new ArgumentException($"{nameof(RedirectPath)} must have a '/' at the start");
+                throw new ArgumentException($"The {nameof(CallbackPath)} should have a value");
             }
 
             if (OtherAuthenticationPaths != null)
             {
+                var errorList = new List<string>();
                 foreach (var otherAuthenticationPath in OtherAuthenticationPaths)
                 {
-                    if (OtherAuthenticationPaths.Count(y => y == otherAuthenticationPath) > 1)
+                    if (!otherAuthenticationPath.Path.HasValue)
                     {
-                        throw new ArgumentException($"{nameof(OtherAuthenticationPaths)} is entered more than once");
+                        throw new ArgumentException($"One of the {nameof(OtherAuthenticationPath)} needs a path defining as it currently doesn't have one");
                     }
+                    
+                    if (OtherAuthenticationPaths.Count(y => y.Path == otherAuthenticationPath.Path) > 1)
+                    {
+                        errorList.Add($"{otherAuthenticationPath.Path} is entered more than once in {nameof(OtherAuthenticationPaths)}\r\n");
+                    }
+                    
+                }
 
-                    if (!otherAuthenticationPath.Path.StartsWith("/"))
-                    {
-                        throw new ArgumentException($"{otherAuthenticationPath.Path} in {nameof(OtherAuthenticationPaths)} must have a '/' at the start");
-                    }
-
-                    if (otherAuthenticationPath.RedirectToPath != null && !otherAuthenticationPath.RedirectToPath.StartsWith("/"))
-                    {
-                        throw new ArgumentException($"{otherAuthenticationPath.RedirectToPath} in {nameof(OtherAuthenticationPaths)} must have a '/' at the start");
-                    }
+                if (errorList.Any())
+                {
+                    throw new ArgumentException(errorList.Aggregate((current, next) => current + next));
                 }
             }
 
+            if (EnableHelpers && HelpersPaths == null)
+            {
+                throw new ArgumentException($"{nameof(HelpersPaths)} must have at least one path when {nameof(EnableHelpers)} is true.");
+            }
+            
             if (HelpersPaths != null)
             {
                 foreach (var helpersPath in HelpersPaths)
                 {
-                    if (HelpersPaths.Count(y => y == helpersPath) > 1)
+                    if (HelpersPaths.Count(y => y == helpersPath.Value) > 1)
                     {
-                        throw new ArgumentException($"{nameof(HelpersPaths)} is entered more than once");
-                    }
-
-                    if (!helpersPath.StartsWith("/"))
-                    {
-                        throw new ArgumentException($"{helpersPath} in {nameof(HelpersPaths)} must have a '/' at the start");
+                        throw new ArgumentException($"{helpersPath.Value} is entered more than once in {nameof(HelpersPaths)}");
                     }
                 }
             }

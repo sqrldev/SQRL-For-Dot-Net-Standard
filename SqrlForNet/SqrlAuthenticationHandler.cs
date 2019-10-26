@@ -47,11 +47,9 @@ namespace SqrlForNet
             Logger.LogTrace("Started checking if request is handled");
             if (Options.EnableHelpers &&
                 (
-                    (
-                        Options.HelpersPaths != null &&
-                        Options.HelpersPaths.Any(x => Request.Path.StartsWithSegments(new PathString(x)))
-                    ) ||
-                    Options.HelpersPaths == null))
+                    Options.HelpersPaths != null &&
+                    Options.HelpersPaths.Any(x => Request.Path.StartsWithSegments(new PathString(x)))
+                ))
             {
                 Logger.LogInformation("Helpers are enabled");
                 CommandWorker.Request = Request;

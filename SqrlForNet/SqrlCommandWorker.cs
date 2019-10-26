@@ -657,7 +657,7 @@ namespace SqrlForNet
 
                 foreach (var optionsOtherAuthenticationPath in Options.OtherAuthenticationPaths)
                 {
-                    var xParam = optionsOtherAuthenticationPath.AuthenticateSeparately ? "x=" + (optionsOtherAuthenticationPath.Path.Length) + "&" : string.Empty;
+                    var xParam = optionsOtherAuthenticationPath.AuthenticateSeparately ? "x=" + (optionsOtherAuthenticationPath.Path.Value.Length) + "&" : string.Empty;
                     var otherUrl = $"sqrl://{Request.Host}{optionsOtherAuthenticationPath.Path}?{xParam}nut={nut}";
                     var otherCheckUrl = $"{Request.Scheme}://{Request.Host}{optionsOtherAuthenticationPath.Path}?check=" + nut;
                     var otherRedirectUrl = $"{Request.Scheme}://{Request.Host}{optionsOtherAuthenticationPath.RedirectToPath}";
@@ -714,7 +714,7 @@ namespace SqrlForNet
                     _logger.LogDebug("OtherAuthenticationPath: {0}", optionsOtherAuthenticationPath.Path);
                     _logger.LogDebug("OtherAuthenticationPath is authenticate separately: {0}", optionsOtherAuthenticationPath.AuthenticateSeparately);
                     
-                    var xParam = optionsOtherAuthenticationPath.AuthenticateSeparately ? "x=" + (optionsOtherAuthenticationPath.Path.Length) + "&" : string.Empty;
+                    var xParam = optionsOtherAuthenticationPath.AuthenticateSeparately ? "x=" + (optionsOtherAuthenticationPath.Path.Value.Length) + "&" : string.Empty;
                     var otherUrl = $"sqrl://{Request.Host}{optionsOtherAuthenticationPath.Path}?{xParam}nut={nut}";
                     var otherCheckUrl = $"{Request.Scheme}://{Request.Host}{optionsOtherAuthenticationPath.Path}?check=" + nut;
                     var otherRedirectUrl = $"{Request.Scheme}://{Request.Host}{optionsOtherAuthenticationPath.RedirectToPath}";
@@ -744,8 +744,8 @@ namespace SqrlForNet
 
         private byte[] GetBase64QrCodeData(string url)
         {
-            var qrCode = QrCode.EncodeText(url, QrCode.Ecc.High);
-            var img = qrCode.ToBitmap(3, 1);
+            var qrCode = QrCode.EncodeText(url, Options.GetQrCodeErrorCorrectionLevel());
+            var img = qrCode.ToBitmap(Options.QrCodeScale, Options.QrCodeBorderSize);
             MemoryStream stream = new MemoryStream();
             img.Save(stream, ImageFormat.Bmp);
             return stream.ToArray();

@@ -1,5 +1,8 @@
-﻿namespace SqrlForNet.Chaos.NaCl.Internal.Ed25519Ref10
+﻿using System.Diagnostics.CodeAnalysis;
+
+namespace SqrlForNet.Chaos.NaCl.Internal.Ed25519Ref10
 {
+	[ExcludeFromCodeCoverage]
 	internal static partial class GroupOperations
 	{
 		public static void ge_tobytes(byte[] s, int offset, ref  GroupElementP2 h)

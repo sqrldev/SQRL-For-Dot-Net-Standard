@@ -1,10 +1,12 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Numerics;
 using System.Runtime.CompilerServices;
 
 namespace SqrlForNet.Chaos.NaCl
 {
+    [ExcludeFromCodeCoverage]
     public static class CryptoBytes
     {
         /// <summary>

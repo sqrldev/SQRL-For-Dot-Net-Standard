@@ -1,4 +1,6 @@
-﻿namespace SqrlForNet.Chaos.NaCl.Internal.Ed25519Ref10
+﻿using System.Diagnostics.CodeAnalysis;
+
+namespace SqrlForNet.Chaos.NaCl.Internal.Ed25519Ref10
 {
 	/*
 	ge means group element.
@@ -37,6 +39,7 @@
 		public FieldElement T;
 	} ;
 
+	[ExcludeFromCodeCoverage]
 	internal struct GroupElementPreComp
 	{
 		public FieldElement yplusx;

@@ -1,7 +1,10 @@
-﻿namespace SqrlForNet.Chaos.NaCl.Internal
+﻿using System.Diagnostics.CodeAnalysis;
+
+namespace SqrlForNet.Chaos.NaCl.Internal
 {
     // Array16<UInt32> Salsa20 state
     // Array16<UInt64> SHA-512 block
+    [ExcludeFromCodeCoverage]
     internal struct Array16<T>
     {
         public T x0;

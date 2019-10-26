@@ -1,8 +1,10 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using SqrlForNet.Chaos.NaCl.Internal;
 
 namespace SqrlForNet.Chaos.NaCl
 {
+    [ExcludeFromCodeCoverage]
     public class Sha512
     {
         private Array8<ulong> _state;
