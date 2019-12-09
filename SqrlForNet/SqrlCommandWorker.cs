@@ -653,7 +653,7 @@ namespace SqrlForNet
 
             if (Options.OtherAuthenticationPaths != null && Options.OtherAuthenticationPaths.Any())
             {
-                responseMessage.Append("\"OtherUrls\":[");
+                responseMessage.Append(",\"OtherUrls\":[");
 
                 foreach (var optionsOtherAuthenticationPath in Options.OtherAuthenticationPaths)
                 {
