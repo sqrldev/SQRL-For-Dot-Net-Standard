@@ -654,7 +654,7 @@ namespace SqrlForNet
             if (Options.OtherAuthenticationPaths != null && Options.OtherAuthenticationPaths.Any())
             {
                 responseMessage.Append(",\"OtherUrls\":[");
-                int ct = 0;
+                int otherOptionsCounter = 0;
                 foreach (var optionsOtherAuthenticationPath in Options.OtherAuthenticationPaths)
                 {
                     var xParam = optionsOtherAuthenticationPath.AuthenticateSeparately ? "x=" + (optionsOtherAuthenticationPath.Path.Value.Length) + "&" : string.Empty;
@@ -662,8 +662,10 @@ namespace SqrlForNet
                     var otherCheckUrl = $"{Request.Scheme}://{Request.Host}{optionsOtherAuthenticationPath.Path}?check=" + nut;
                     var otherRedirectUrl = $"{Request.Scheme}://{Request.Host}{optionsOtherAuthenticationPath.RedirectToPath}";
                     var otherCancelUrl = Base64UrlTextEncoder.Encode(Encoding.ASCII.GetBytes($"{Request.Scheme}://{Request.Host}{optionsOtherAuthenticationPath.Path}"));
-                    if(ct>0)
+                    if (otherOptionsCounter > 0)
+                    {
                         responseMessage.Append(",");
+                    }
                     responseMessage.Append("{");
                     responseMessage.Append("\"url\":\"" + otherUrl + "\",");
                     responseMessage.Append("\"checkUrl\":\"" + otherCheckUrl + "\",");
@@ -671,7 +673,7 @@ namespace SqrlForNet
                     responseMessage.Append("\"qrCodeBase64\":\"" + GetBase64QrCode(otherUrl) + "\",");
                     responseMessage.Append("\"redirectUrl\":\"" + otherRedirectUrl + "\"");
                     responseMessage.Append("}");
-                    ct++;
+                    otherOptionsCounter++;
                 }
 
                 responseMessage.Append("]");
