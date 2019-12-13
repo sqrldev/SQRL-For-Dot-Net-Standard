@@ -1,5 +1,6 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using NUnit.Framework;
 using SqrlForNet;
@@ -112,8 +113,53 @@ namespace UnitTests
             _classUnderTest.HelpersPaths = new[]
             {
                 new PathString("/unit/test"),
+                new PathString("/unit/test")
             };
+            Assert.That(_classUnderTest.Validate, Throws.TypeOf<ArgumentException>().With.Message.EqualTo("/unit/test is entered more than once in HelpersPaths"));
+        }
+
+        [Test]
+        public void Should_ThrowArgumentException_When_BothUsersExistsAreNull()
+        {
+            _classUnderTest.UserExists = null;
+            _classUnderTest.UserExistsAsync = null;
             Assert.That(_classUnderTest.Validate, Throws.TypeOf<ArgumentException>().With.Message.EqualTo("UserExists should be set so that you can validate users"));
+        }
+
+        [Test]
+        public void Should_ThrowArgumentException_When_BothUsersExistsAreNotNull()
+        {
+            _classUnderTest.UserExists = (s, context) => { return UserLookUpResult.Unknown; };
+            _classUnderTest.UserExistsAsync = (s, context) => { return Task.FromResult(UserLookUpResult.Unknown); }; ;
+            Assert.That(_classUnderTest.Validate, Throws.TypeOf<ArgumentException>().With.Message.EqualTo("UserExists and UserExistsAsync are both defined you should only define one of them."));
+        }
+
+        [Test]
+        public void Should_ThrowArgumentException_When_BothUpdateUserIdAreNull()
+        {
+            _classUnderTest.UserExists = (s, context) => { return UserLookUpResult.Unknown; };
+            _classUnderTest.UpdateUserId = null;
+            _classUnderTest.UpdateUserIdAsync = null;
+            Assert.That(_classUnderTest.Validate, Throws.TypeOf<ArgumentException>().With.Message.EqualTo("UpdateUserId should be set so that you can update your user id for a SQRL user"));
+        }
+
+        [Test]
+        public void Should_ThrowArgumentException_When_BothUpdateUserIdAreNotNull()
+        {
+            _classUnderTest.UserExists = (s, context) => { return UserLookUpResult.Unknown; };
+            _classUnderTest.UpdateUserId = (s, s1, arg3, arg4, arg5) => {};
+            _classUnderTest.UpdateUserIdAsync = (s, s1, arg3, arg4, arg5) => { return Task.FromResult(0); };
+            Assert.That(_classUnderTest.Validate, Throws.TypeOf<ArgumentException>().With.Message.EqualTo("UpdateUserId and UpdateUserIdAsync are both defined you should only define one of them."));
+        }
+
+        [Test]
+        public void Should_ThrowArgumentException_When_BothCreateUserAreNotNull()
+        {
+            _classUnderTest.UserExists = (s, context) => { return UserLookUpResult.Unknown; };
+            _classUnderTest.UpdateUserId = (s, s1, arg3, arg4, arg5) => { };
+            _classUnderTest.CreateUser = (s, s1, arg3, arg4) => {  };
+            _classUnderTest.CreateUserAsync = (s, s1, arg3, arg4) => { return Task.FromResult(0); };
+            Assert.That(_classUnderTest.Validate, Throws.TypeOf<ArgumentException>().With.Message.EqualTo("UpdateUserId and UpdateUserIdAsync are both defined you should only define one of them."));
         }
 
     }
