@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Logging;
 using Net.Codecrete.QrCodeGenerator;
 using SqrlForNet.Chaos.NaCl;
+using SqrlForNet.Extensions;
 
 namespace SqrlForNet
 {
@@ -653,8 +654,8 @@ namespace SqrlForNet
 
             if (Options.OtherAuthenticationPaths != null && Options.OtherAuthenticationPaths.Any())
             {
-                responseMessage.Append("\"OtherUrls\":[");
-
+                responseMessage.Append(",\"OtherUrls\":[");
+                int otherOptionsCounter = 0;
                 foreach (var optionsOtherAuthenticationPath in Options.OtherAuthenticationPaths)
                 {
                     var xParam = optionsOtherAuthenticationPath.AuthenticateSeparately ? "x=" + (optionsOtherAuthenticationPath.Path.Value.Length) + "&" : string.Empty;
@@ -662,7 +663,10 @@ namespace SqrlForNet
                     var otherCheckUrl = $"{Request.Scheme}://{Request.Host}{optionsOtherAuthenticationPath.Path}?check=" + nut;
                     var otherRedirectUrl = $"{Request.Scheme}://{Request.Host}{optionsOtherAuthenticationPath.RedirectToPath}";
                     var otherCancelUrl = Base64UrlTextEncoder.Encode(Encoding.ASCII.GetBytes($"{Request.Scheme}://{Request.Host}{optionsOtherAuthenticationPath.Path}"));
-
+                    if (otherOptionsCounter > 0)
+                    {
+                        responseMessage.Append(",");
+                    }
                     responseMessage.Append("{");
                     responseMessage.Append("\"url\":\"" + otherUrl + "\",");
                     responseMessage.Append("\"checkUrl\":\"" + otherCheckUrl + "\",");
@@ -670,6 +674,7 @@ namespace SqrlForNet
                     responseMessage.Append("\"qrCodeBase64\":\"" + GetBase64QrCode(otherUrl) + "\",");
                     responseMessage.Append("\"redirectUrl\":\"" + otherRedirectUrl + "\"");
                     responseMessage.Append("}");
+                    otherOptionsCounter++;
                 }
 
                 responseMessage.Append("]");
@@ -774,21 +779,21 @@ namespace SqrlForNet
             var responseMessageBuilder = new StringBuilder();
             var nut = GenerateNut(Options.EncryptionKey);
             StoreNut(nut);
-            responseMessageBuilder.AppendLine("ver=1");
-            responseMessageBuilder.AppendLine("nut=" + nut);
-            responseMessageBuilder.AppendLine("tif=" + tifValue.ToString("X"));
-            responseMessageBuilder.AppendLine("qry=" + Request.Path + "?nut=" + nut);
+            responseMessageBuilder.AppendLine("ver=1", true);
+            responseMessageBuilder.AppendLine("nut=" + nut, true);
+            responseMessageBuilder.AppendLine("tif=" + tifValue.ToString("X"), true);
+            responseMessageBuilder.AppendLine("qry=" + Request.Path + "?nut=" + nut, true);
 
             if (includeCpsUrl)
             {
-                responseMessageBuilder.AppendLine("url=" + Request.Scheme + "://" + Request.Host + Request.Path + "?cps=" + GenerateCpsCode());
+                responseMessageBuilder.AppendLine("url=" + Request.Scheme + "://" + Request.Host + Request.Path + "?cps=" + GenerateCpsCode(), true);
             }
 
             if ((tifValue.HasFlag(Tif.IdMatch) || tifValue.HasFlag(Tif.PreviousIdMatch) || tifValue.HasFlag(Tif.SqrlDisabled)))
             {
                 var idk = GetClientParams()["idk"];
                 var suk = Options.GetUserSukInternal(idk, Request.HttpContext);
-                responseMessageBuilder.AppendLine("suk=" + Base64UrlTextEncoder.Encode(Encoding.ASCII.GetBytes(suk)));
+                responseMessageBuilder.AppendLine("suk=" + Base64UrlTextEncoder.Encode(Encoding.ASCII.GetBytes(suk)), true);
             }
 
             if (!(tifValue.HasFlag(Tif.TransientError) || tifValue.HasFlag(Tif.BadId) ||
@@ -803,7 +808,7 @@ namespace SqrlForNet
                 var message = Options.GetAskQuestionInternal(Request, nut);
                 if (message != null)
                 {
-                    responseMessageBuilder.AppendLine($"ask={message.ToAskMessage()}");
+                    responseMessageBuilder.AppendLine($"ask={message.ToAskMessage()}", true);
                 }
             }
 
