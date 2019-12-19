@@ -607,6 +607,11 @@ namespace SqrlForNet
                                             }};
                                             gifProbe.onerror();");
             responseMessage.AppendLine("}");
+            responseMessage.AppendLine("var SQRLPollCount = 0;");
+            responseMessage.AppendLine("var SQRLCheckPoll = null;");
+            responseMessage.AppendLine("function StartPolling() {");
+            responseMessage.AppendLine("SQRLCheckPoll = setInterval(function(){ CheckAuto(); }, " + Options.CheckMilliSeconds + ");");
+            responseMessage.AppendLine("}");
             responseMessage.AppendLine("function CheckAuto() {");
             responseMessage.AppendLine($@"var xhttp = new XMLHttpRequest();
                                           xhttp.onreadystatechange = function() {{
@@ -618,10 +623,17 @@ namespace SqrlForNet
                                           }};
                                           xhttp.open(""GET"", ""{checkUrl}"", true);
                                           xhttp.send();");
+            if (Options.MaxCheckCalls.HasValue)
+            {
+                responseMessage.AppendLine($@"SQRLPollCount = SQRLPollCount + 1;
+                                          if (SQRLPollCount > {Options.MaxCheckCalls.Value}) {{
+                                            clearInterval(SQRLCheckPoll);
+                                          }}");
+            }
             responseMessage.AppendLine("}");
             responseMessage.AppendLine("</script>");
             responseMessage.AppendLine("</head>");
-            responseMessage.AppendLine("<body onload=\"setInterval(function(){ CheckAuto(); }, " + Options.CheckMilliSeconds + ");\">");
+            responseMessage.AppendLine("<body onload=\"StartPolling();\">");
             responseMessage.AppendLine("<h1>SQRL login page</h1>");
             responseMessage.AppendLine("<img src=\"data:image/bmp;base64," + GetBase64QrCode(url) + "\">");
             responseMessage.AppendLine($"<a href=\"{url}&can={cancelUrl}\" onclick=\"CpsProcess(this);\">Sign in with SQRL</a>");
@@ -651,6 +663,7 @@ namespace SqrlForNet
             responseMessage.Append("\"cancelUrl\":\"" + cancelUrl + "\",");
             responseMessage.Append("\"qrCodeBase64\":\"" + GetBase64QrCode(url) + "\",");
             responseMessage.Append("\"redirectUrl\":\"" + redirectUrl + "\"");
+            responseMessage.Append("\"maxCheckCalls\":\"" + Options.MaxCheckCalls + "\"");
 
             if (Options.OtherAuthenticationPaths != null && Options.OtherAuthenticationPaths.Any())
             {
@@ -704,12 +717,13 @@ namespace SqrlForNet
             _logger.LogDebug("The CheckUrl is: {0}", checkUrl);
             _logger.LogDebug("The RedirectUrl is: {0}", redirectUrl);
            
-
             Request.HttpContext.Items.Add("CallbackUrl", url);
             Request.HttpContext.Items.Add("QrData", qrCode);
             Request.HttpContext.Items.Add("CheckMilliSeconds", Options.CheckMilliSeconds);
             Request.HttpContext.Items.Add("CheckUrl", checkUrl);
             Request.HttpContext.Items.Add("RedirectUrl", redirectUrl);
+            Request.HttpContext.Items.Add("MaxCheckCalls", Options.MaxCheckCalls);
+
             if (Options.OtherAuthenticationPaths != null && Options.OtherAuthenticationPaths.Any())
             {
                 _logger.LogTrace("There are {0}", nameof(Options.OtherAuthenticationPaths));

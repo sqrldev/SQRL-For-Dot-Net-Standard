@@ -19,6 +19,8 @@ namespace SqrlForNet
 
         public int CheckMilliSeconds { get; set; }
 
+        public int? MaxCheckCalls { get; set; }
+
         public string NameForAnonymous { get; set; }
 
         public string CancelledPath { get; set; }
@@ -504,6 +506,7 @@ namespace SqrlForNet
             CallbackPath = "/login-sqrl";
             NutExpiresInSeconds = 60;
             CheckMilliSeconds = 1000;
+            MaxCheckCalls = null;
             QrCodeBorderSize = 1;
             QrCodeScale = 3;
             QrCodeErrorCorrectionLevel = EccLevel.Low;
@@ -522,6 +525,16 @@ namespace SqrlForNet
             if (EncryptionKey == null || EncryptionKey.Length < 1)
             {
                 throw new ArgumentException($"{nameof(EncryptionKey)} must be set with some bytes or don't override it and secure random bytes are generated.");
+            }
+
+            if (CheckMilliSeconds < 1)
+            {
+                throw new ArgumentException($"{nameof(CheckMilliSeconds)} must be grater than 0.");
+            }
+
+            if (MaxCheckCalls.HasValue && MaxCheckCalls.Value < 1)
+            {
+                throw new ArgumentException($"{nameof(MaxCheckCalls)} must be grater than 0.");
             }
 
             if (NutExpiresInSeconds < 1)
