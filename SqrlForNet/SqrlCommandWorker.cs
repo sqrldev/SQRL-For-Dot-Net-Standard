@@ -662,6 +662,7 @@ namespace SqrlForNet
             responseMessage.Append("\"cancelUrl\":\"" + cancelUrl + "\",");
             responseMessage.Append("\"qrCodeBase64\":\"" + GetBase64QrCode(url) + "\",");
             responseMessage.Append("\"redirectUrl\":\"" + redirectUrl + "\"");
+            responseMessage.Append("\"maxCheckCalls\":\"" + Options.MaxCheckCalls + "\"");
 
             if (Options.OtherAuthenticationPaths != null && Options.OtherAuthenticationPaths.Any())
             {
@@ -711,12 +712,13 @@ namespace SqrlForNet
             _logger.LogDebug("The CheckUrl is: {0}", checkUrl);
             _logger.LogDebug("The RedirectUrl is: {0}", redirectUrl);
            
-
             Request.HttpContext.Items.Add("CallbackUrl", url);
             Request.HttpContext.Items.Add("QrData", qrCode);
             Request.HttpContext.Items.Add("CheckMilliSeconds", Options.CheckMilliSeconds);
             Request.HttpContext.Items.Add("CheckUrl", checkUrl);
             Request.HttpContext.Items.Add("RedirectUrl", redirectUrl);
+            Request.HttpContext.Items.Add("MaxCheckCalls", Options.MaxCheckCalls);
+
             if (Options.OtherAuthenticationPaths != null && Options.OtherAuthenticationPaths.Any())
             {
                 _logger.LogTrace("There are {0}", nameof(Options.OtherAuthenticationPaths));

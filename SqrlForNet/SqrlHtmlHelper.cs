@@ -48,6 +48,11 @@ namespace SqrlForNet
             script.InnerHtml.AppendHtml("gifProbe.onerror();");
             script.InnerHtml.AppendHtml("};");
             if (poll) { 
+                script.InnerHtml.AppendHtml("var SQRLPollCount = 0;");
+                script.InnerHtml.AppendHtml("var SQRLCheckPoll = null;");
+                script.InnerHtml.AppendHtml("function StartPolling() {");
+                script.InnerHtml.AppendHtml("SQRLCheckPoll = setInterval(function(){ CheckAuto(); }, " + pollTime + ");");
+                script.InnerHtml.AppendHtml("}");
                 script.InnerHtml.AppendHtml("function CheckAuto()");
                 script.InnerHtml.AppendHtml("{");
                 script.InnerHtml.AppendHtml("var xhttp = new XMLHttpRequest();");
@@ -63,8 +68,16 @@ namespace SqrlForNet
                 script.InnerHtml.AppendHtml("};");
                 script.InnerHtml.AppendHtml("xhttp.open(\"GET\", \""+ request.HttpContext.Items["CheckUrl"] + "\", true);");
                 script.InnerHtml.AppendHtml("xhttp.send();");
+                var maxCheckCalls = request.HttpContext.Items["MaxCheckCalls"] as int?;
+                if (maxCheckCalls.HasValue)
+                {
+                    script.InnerHtml.AppendHtml($@"SQRLPollCount = SQRLPollCount + 1;
+                                          if (SQRLPollCount > {maxCheckCalls.Value}) {{
+                                            clearInterval(SQRLCheckPoll);
+                                          }}");
+                }
                 script.InnerHtml.AppendHtml("};");
-                script.InnerHtml.AppendHtml("document.onload = setInterval(function(){ CheckAuto(); }, " + pollTime + ");");
+                script.InnerHtml.AppendHtml("document.onload = StartPolling();");
             }
 
             var stringWriter = new System.IO.StringWriter();
@@ -112,6 +125,11 @@ namespace SqrlForNet
             script.InnerHtml.AppendHtml("};");
             if (poll)
             {
+                script.InnerHtml.AppendHtml("var SQRLPollCount = 0;");
+                script.InnerHtml.AppendHtml("var SQRLCheckPoll = null;");
+                script.InnerHtml.AppendHtml("function StartPolling() {");
+                script.InnerHtml.AppendHtml("SQRLCheckPoll = setInterval(function(){ CheckAuto(); }, " + pollTime + ");");
+                script.InnerHtml.AppendHtml("}");
                 script.InnerHtml.AppendHtml("function CheckAuto()");
                 script.InnerHtml.AppendHtml("{");
                 script.InnerHtml.AppendHtml("var xhttp = new XMLHttpRequest();");
@@ -127,8 +145,16 @@ namespace SqrlForNet
                 script.InnerHtml.AppendHtml("};");
                 script.InnerHtml.AppendHtml("xhttp.open(\"GET\", \"" + otherUrl.CheckUrl + "\", true);");
                 script.InnerHtml.AppendHtml("xhttp.send();");
+                var maxCheckCalls = request.HttpContext.Items["MaxCheckCalls"] as int?;
+                if (maxCheckCalls.HasValue)
+                {
+                    script.InnerHtml.AppendHtml($@"SQRLPollCount = SQRLPollCount + 1;
+                                          if (SQRLPollCount > {maxCheckCalls.Value}) {{
+                                            clearInterval(SQRLCheckPoll);
+                                          }}");
+                }
                 script.InnerHtml.AppendHtml("};");
-                script.InnerHtml.AppendHtml("document.onload = setInterval(function(){ CheckAuto(); }, " + pollTime + ");");
+                script.InnerHtml.AppendHtml("document.onload = StartPolling();");
             }
 
             var stringWriter = new System.IO.StringWriter();
@@ -158,6 +184,11 @@ namespace SqrlForNet
             if (poll)
             {
                 var script = new TagBuilder("script");
+                script.InnerHtml.AppendHtml("var SQRLPollCount = 0;");
+                script.InnerHtml.AppendHtml("var SQRLCheckPoll = null;");
+                script.InnerHtml.AppendHtml("function StartPolling() {");
+                script.InnerHtml.AppendHtml("SQRLCheckPoll = setInterval(function(){ CheckAuto(); }, " + pollTime + ");");
+                script.InnerHtml.AppendHtml("}");
                 script.InnerHtml.AppendHtml("function CheckAuto()");
                 script.InnerHtml.AppendHtml("{");
                 script.InnerHtml.AppendHtml("var xhttp = new XMLHttpRequest();");
@@ -173,8 +204,16 @@ namespace SqrlForNet
                 script.InnerHtml.AppendHtml("};");
                 script.InnerHtml.AppendHtml("xhttp.open(\"GET\", \"" + request.HttpContext.Items["CheckUrl"] + "\", true);");
                 script.InnerHtml.AppendHtml("xhttp.send();");
+                var maxCheckCalls = request.HttpContext.Items["MaxCheckCalls"] as int?;
+                if (maxCheckCalls.HasValue)
+                {
+                    script.InnerHtml.AppendHtml($@"SQRLPollCount = SQRLPollCount + 1;
+                                          if (SQRLPollCount > {maxCheckCalls.Value}) {{
+                                            clearInterval(SQRLCheckPoll);
+                                          }}");
+                }
                 script.InnerHtml.AppendHtml("};");
-                script.InnerHtml.AppendHtml("document.onload = setInterval(function(){ CheckAuto(); }, " + pollTime + ");");
+                script.InnerHtml.AppendHtml("document.onload = StartPolling();");
                 script.WriteTo(stringWriter, HtmlEncoder.Default);
             }
             return new HtmlString(stringWriter.ToString());
@@ -202,6 +241,11 @@ namespace SqrlForNet
             if (poll)
             {
                 var script = new TagBuilder("script");
+                script.InnerHtml.AppendHtml("var SQRLPollCount = 0;");
+                script.InnerHtml.AppendHtml("var SQRLCheckPoll = null;");
+                script.InnerHtml.AppendHtml("function StartPolling() {");
+                script.InnerHtml.AppendHtml("SQRLCheckPoll = setInterval(function(){ CheckAuto(); }, " + pollTime + ");");
+                script.InnerHtml.AppendHtml("}");
                 script.InnerHtml.AppendHtml("function CheckAuto()");
                 script.InnerHtml.AppendHtml("{");
                 script.InnerHtml.AppendHtml("var xhttp = new XMLHttpRequest();");
@@ -217,8 +261,16 @@ namespace SqrlForNet
                 script.InnerHtml.AppendHtml("};");
                 script.InnerHtml.AppendHtml("xhttp.open(\"GET\", \"" + otherUrl.CheckUrl + "\", true);");
                 script.InnerHtml.AppendHtml("xhttp.send();");
+                var maxCheckCalls = request.HttpContext.Items["MaxCheckCalls"] as int?;
+                if (maxCheckCalls.HasValue)
+                {
+                    script.InnerHtml.AppendHtml($@"SQRLPollCount = SQRLPollCount + 1;
+                                          if (SQRLPollCount > {maxCheckCalls.Value}) {{
+                                            clearInterval(SQRLCheckPoll);
+                                          }}");
+                }
                 script.InnerHtml.AppendHtml("};");
-                script.InnerHtml.AppendHtml("document.onload = setInterval(function(){ CheckAuto(); }, " + pollTime + ");");
+                script.InnerHtml.AppendHtml("document.onload = StartPolling();");
                 script.WriteTo(stringWriter, HtmlEncoder.Default);
             }
             return new HtmlString(stringWriter.ToString());
