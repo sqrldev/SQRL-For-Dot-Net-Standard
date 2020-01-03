@@ -793,7 +793,8 @@ namespace SqrlForNet
             {
                 var idk = GetClientParams()["idk"];
                 var suk = Options.GetUserSukInternal(idk, Request.HttpContext);
-                responseMessageBuilder.AppendLine("suk=" + Base64UrlTextEncoder.Encode(Encoding.ASCII.GetBytes(suk)), true);
+                //Removed Base64 Encoding for SUK which was causing a validation error on VUK / URS
+                responseMessageBuilder.AppendLine($"suk={suk}", true);
             }
 
             if (!(tifValue.HasFlag(Tif.TransientError) || tifValue.HasFlag(Tif.BadId) ||
