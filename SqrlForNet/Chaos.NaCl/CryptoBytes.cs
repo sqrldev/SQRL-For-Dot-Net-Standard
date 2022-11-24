@@ -42,7 +42,7 @@ namespace SqrlForNet.Chaos.NaCl
         {
             if (x.Count != y.Count)
                 return false;
-            return InternalConstantTimeEquals(x.Array, x.Offset, y.Array, y.Offset, x.Count) != 0;
+            return InternalConstantTimeEquals(x.Array ?? Array.Empty<byte>(), x.Offset, y.Array ?? Array.Empty<byte>(), y.Offset, x.Count) != 0;
         }
 
         /// <summary>
@@ -98,7 +98,7 @@ namespace SqrlForNet.Chaos.NaCl
         /// <param name="data">Byte array segment</param>
         public static void Wipe(ArraySegment<byte> data)
         {
-            InternalWipe(data.Array, data.Offset, data.Count);
+            InternalWipe(data.Array ?? Array.Empty<byte>(), data.Offset, data.Count);
         }
 
         // Secure wiping is hard
@@ -129,9 +129,9 @@ namespace SqrlForNet.Chaos.NaCl
         /// </summary>
         /// <param name="data">Byte array</param>
         /// <returns>Hex representation of byte array</returns>
-        public static string ToHexStringUpper(byte[] data)
+        public static string? ToHexStringUpper(byte[]? data)
         {
-            if (data == null)
+            if (data is null)
                 return null;
             char[] c = new char[data.Length * 2];
             int b;
@@ -151,9 +151,9 @@ namespace SqrlForNet.Chaos.NaCl
         /// </summary>
         /// <param name="data">Byte array</param>
         /// <returns>Hex representation of byte array</returns>
-        public static string ToHexStringLower(byte[] data)
+        public static string? ToHexStringLower(byte[]? data)
         {
-            if (data == null)
+            if (data is null)
                 return null;
             char[] c = new char[data.Length * 2];
             int b;
@@ -172,9 +172,9 @@ namespace SqrlForNet.Chaos.NaCl
         /// </summary>
         /// <param name="hexString">Hex encoded byte sequence</param>
         /// <returns>Byte array</returns>
-        public static byte[] FromHexString(string hexString)
+        public static byte[]? FromHexString(string hexString)
         {
-            if (hexString == null)
+            if (hexString is null)
                 return null;
             if (hexString.Length % 2 != 0)
                 throw new FormatException("The hex string is invalid because it has an odd length");
@@ -190,9 +190,9 @@ namespace SqrlForNet.Chaos.NaCl
         /// </summary>
         /// <param name="data">Byte array</param>
         /// <returns>Base 64 encoded data</returns>
-        public static string ToBase64String(byte[] data)
+        public static string? ToBase64String(byte[] data)
         {
-            if (data == null)
+            if (data is null)
                 return null;
             return Convert.ToBase64String(data);
         }
@@ -202,9 +202,9 @@ namespace SqrlForNet.Chaos.NaCl
         /// </summary>
         /// <param name="base64String">Base 64 encoded data</param>
         /// <returns>Byte array</returns>
-        public static byte[] FromBase64String(string base64String)
+        public static byte[]? FromBase64String(string? base64String)
         {
-            if (base64String == null)
+            if (base64String is null)
                 return null;
             return Convert.FromBase64String(base64String);
         }

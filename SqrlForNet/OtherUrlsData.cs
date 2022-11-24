@@ -7,11 +7,11 @@ namespace SqrlForNet
     internal class OtherUrlsData
     {
 
-        internal string Path;
-        internal string Url;
-        internal string CheckUrl;
-        internal string QrCodeBase64;
-        internal string RedirectUrl;
+        internal string? Path;
+        internal string? Url;
+        internal string? CheckUrl;
+        internal string? QrCodeBase64;
+        internal string? RedirectUrl;
 
     }
 }

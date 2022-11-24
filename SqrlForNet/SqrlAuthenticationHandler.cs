@@ -120,7 +120,7 @@ namespace SqrlForNet
         private Task<HandleRequestResult> CheckRequest()
         {
             var result = CommandWorker.CheckPage();
-            if (result != null)
+            if (result is not null && result.Idk is not null)
             {
                 Logger.LogTrace("User is authorized and can be logged in");
                 var username = Options.GetUsernameInternal(result.Idk, Context);
@@ -145,7 +145,7 @@ namespace SqrlForNet
             var result = Options.GetUserIdAndRemoveCpsSessionIdInternal(Request.Query["cps"], Context);
             if (!string.IsNullOrEmpty(result))
             {
-                var username = Options.GetUsernameInternal(result, Context);
+                var username = Options.GetUsernameInternal(result!, Context);
 
                 var claims = new[] {
                     new Claim(ClaimTypes.NameIdentifier, result),
@@ -175,15 +175,31 @@ namespace SqrlForNet
             {
                 responseMessage.AppendLine("<div>");
                 responseMessage.AppendLine("<h2>" + log.RequestUrl + "</h2>");
-                foreach (var body in log.Body)
+                if (log.Body is not null)
                 {
-                    responseMessage.AppendLine("<p>" + body + "</p>");
+                    foreach (var body in log.Body)
+                    {
+                        responseMessage.AppendLine("<p>" + body + "</p>");
+                    }
                 }
+                else
+                {
+                    responseMessage.AppendLine("<p>No body provided</p>");
+                }
+
                 responseMessage.AppendLine("<h2>Responded with</h2>");
-                foreach (var body in log.ResponseBody)
+                if (log.ResponseBody is not null)
                 {
-                    responseMessage.AppendLine("<p>" + body + "</p>");
+                    foreach (var body in log.ResponseBody)
+                    {
+                        responseMessage.AppendLine("<p>" + body + "</p>");
+                    }
                 }
+                else
+                {
+                    responseMessage.AppendLine("<p>No response body</p>");
+                }
+
                 responseMessage.AppendLine("</div>");
                 responseMessage.AppendLine("<hr/>");
             }

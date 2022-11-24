@@ -9,7 +9,7 @@ namespace SqrlForNet
 
         public static string GetUrl(HttpRequest request)
         {
-            return request.HttpContext.Items["CallbackUrl"].ToString();
+            return request.HttpContext.Items["CallbackUrl"].ToString() ?? string.Empty;
         }
 
         public static string SqrlUrl(this HttpRequest request)
@@ -24,7 +24,7 @@ namespace SqrlForNet
         
         public static string GetQrData(HttpRequest request)
         {
-            return request.HttpContext.Items["QrData"].ToString();
+            return request.HttpContext.Items["QrData"].ToString() ?? string.Empty;
         }
 
         public static string SqrlQrData(this HttpRequest request)
@@ -39,7 +39,7 @@ namespace SqrlForNet
 
         public static string GetCheckMilliseconds(HttpRequest request)
         {
-            return request.HttpContext.Items["CheckMilliSeconds"].ToString();
+            return request.HttpContext.Items["CheckMilliSeconds"].ToString() ?? string.Empty;
         }
 
         public static string SqrlCheckMilliseconds(this HttpRequest request)
@@ -54,7 +54,7 @@ namespace SqrlForNet
 
         public static string GetCheckUrl(HttpRequest request)
         {
-            return request.HttpContext.Items["CheckUrl"].ToString();
+            return request.HttpContext.Items["CheckUrl"].ToString() ?? string.Empty;
         }
 
         public static string SqrlCheckUrl(this HttpRequest request)
@@ -67,57 +67,57 @@ namespace SqrlForNet
             return response.HttpContext.Request.SqrlCheckUrl();
         }
 
-        public static string GetUrl(HttpRequest request, string path)
+        public static string? GetUrl(HttpRequest request, string path)
         {
             var otherUrl = ((List<OtherUrlsData>)request.HttpContext.Items["OtherUrls"]).Single(x => x.Path == path);
             return otherUrl.Url;
         }
 
-        public static string SqrlUrl(this HttpRequest request, string path)
+        public static string? SqrlUrl(this HttpRequest request, string path)
         {
             return GetUrl(request, path);
         }
 
-        public static string SqrlUrl(this HttpResponse response, string path)
+        public static string? SqrlUrl(this HttpResponse response, string path)
         {
             return response.HttpContext.Request.SqrlUrl(path);
         }
 
-        public static string GetQrData(HttpRequest request, string path)
+        public static string? GetQrData(HttpRequest request, string path)
         {
             var otherUrl = ((List<OtherUrlsData>)request.HttpContext.Items["OtherUrls"]).Single(x => x.Path == path);
             return otherUrl.QrCodeBase64;
         }
 
-        public static string SqrlQrData(this HttpRequest request, string path)
+        public static string? SqrlQrData(this HttpRequest request, string path)
         {
             return GetQrData(request, path);
         }
 
-        public static string SqrlQrData(this HttpResponse response, string path)
+        public static string? SqrlQrData(this HttpResponse response, string path)
         {
             return response.HttpContext.Request.SqrlQrData(path);
         }
 
-        public static string GetCheckUrl(HttpRequest request, string path)
+        public static string? GetCheckUrl(HttpRequest request, string path)
         {
             var otherUrl = ((List<OtherUrlsData>)request.HttpContext.Items["OtherUrls"]).Single(x => x.Path == path);
             return otherUrl.CheckUrl;
         }
 
-        public static string SqrlCheckUrl(this HttpRequest request, string path)
+        public static string? SqrlCheckUrl(this HttpRequest request, string path)
         {
             return GetCheckUrl(request, path);
         }
 
-        public static string SqrlCheckUrl(this HttpResponse response, string path)
+        public static string? SqrlCheckUrl(this HttpResponse response, string path)
         {
             return response.HttpContext.Request.SqrlCheckUrl(path);
         }
         
         public static string GetRedirectUrl(HttpRequest request)
         {
-            return request.HttpContext.Items["RedirectUrl"].ToString();
+            return request.HttpContext.Items["RedirectUrl"].ToString() ?? string.Empty;
         }
 
         public static string SqrlRedirectUrl(this HttpRequest request)

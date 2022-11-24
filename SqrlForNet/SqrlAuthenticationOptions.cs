@@ -21,7 +21,7 @@ namespace SqrlForNet
 
         public string NameForAnonymous { get; set; }
 
-        public string CancelledPath { get; set; }
+        public string? CancelledPath { get; set; }
 
         public PathString RedirectPath { get; set; }
         
@@ -31,7 +31,7 @@ namespace SqrlForNet
         
         public bool EnableHelpers { get; set; }
 
-        public PathString[] HelpersPaths { get; set; }
+        public PathString[]? HelpersPaths { get; set; }
         
         public int QrCodeBorderSize { get; set; }
         
@@ -50,177 +50,195 @@ namespace SqrlForNet
                 default: throw new ArgumentOutOfRangeException();
             }
         }
-        
-        public OtherAuthenticationPath[] OtherAuthenticationPaths { get; set; }
-        
-        public Func<string, HttpContext, UserLookUpResult> UserExists;
 
-        public Func<string, HttpContext, Task<UserLookUpResult>> UserExistsAsync;
+        private OtherAuthenticationPath[]? _otherAuthenticationPaths;
+
+        public OtherAuthenticationPath[]? OtherAuthenticationPaths
+        {
+            get => DynamicOtherAuthenticationPaths is null ? 
+                _otherAuthenticationPaths : 
+                DynamicOtherAuthenticationPaths.Invoke().ToArray();
+            set => _otherAuthenticationPaths = value;
+        }
+
+        public Func<IEnumerable<OtherAuthenticationPath>>? DynamicOtherAuthenticationPaths { get; set; }
+        
+        public Func<string, HttpContext, UserLookUpResult>? UserExists;
+
+        public Func<string, HttpContext, Task<UserLookUpResult>>? UserExistsAsync;
 
         internal UserLookUpResult UserExistsInternal(string idk, HttpContext context)
         {
-            if (UserExists != null)
+            if (UserExists is not null)
             {
                 return UserExists.Invoke(idk, context);
             }
-            else
+            if (UserExistsAsync is not null)
             {
                 var task = UserExistsAsync.Invoke(idk, context);
                 task.Wait();
                 return task.Result;
             }
+            return UserLookUpResult.Unknown;
         }
 
-        public Action<string, string, string, string, HttpContext> UpdateUserId;
+        public Action<string, string, string, string, HttpContext>? UpdateUserId;
         
-        public Func<string, string, string, string, HttpContext, Task> UpdateUserIdAsync;
+        public Func<string, string, string, string, HttpContext, Task>? UpdateUserIdAsync;
 
         internal void UpdateUserIdInternal(string idk, string suk, string vuk, string pidk, HttpContext context)
         {
-            if (UpdateUserId != null)
+            if (UpdateUserId is not null)
             {
                 UpdateUserId.Invoke(idk, suk, vuk, pidk, context);
             }
-            else
+            else if (UpdateUserIdAsync is not null)
             {
                 var task = UpdateUserIdAsync.Invoke(idk, suk, vuk, pidk, context);
                 task.Wait();
             }
         }
 
-        public Action<string, string, string, HttpContext> CreateUser;
+        public Action<string, string, string, HttpContext>? CreateUser;
 
-        public Func<string, string, string, HttpContext, Task> CreateUserAsync;
+        public Func<string, string, string, HttpContext, Task>? CreateUserAsync;
 
         internal void CreateUserInternal(string idk, string suk, string vuk, HttpContext context)
         {
-            if (CreateUser != null)
+            if (CreateUser is not null)
             {
                 CreateUser.Invoke(idk, suk, vuk, context);
             }
-            else
+            else if (CreateUserAsync is not null)
             {
                 var task = CreateUserAsync.Invoke(idk, suk, vuk, context);
                 task.Wait();
             }
         }
 
-        public Func<string, HttpContext, string> GetUserVuk;
+        public Func<string, HttpContext, string>? GetUserVuk;
 
-        public Func<string, HttpContext, Task<string>> GetUserVukAsync;
+        public Func<string, HttpContext, Task<string>>? GetUserVukAsync;
 
-        internal string GetUserVukInternal(string idk, HttpContext context)
+        internal string? GetUserVukInternal(string idk, HttpContext context)
         {
-            if (GetUserVuk != null)
+            if (GetUserVuk is not null)
             {
                 return GetUserVuk.Invoke(idk, context);
             }
-            else
+
+            if (GetUserVukAsync is null)
             {
-                var task = GetUserVukAsync.Invoke(idk, context);
-                task.Wait();
-                return task.Result;
+                return null;
             }
+            
+            var task = GetUserVukAsync.Invoke(idk, context);
+            task.Wait();
+            return task.Result;
         }
 
-        public Func<string, HttpContext, string> GetUserSuk;
+        public Func<string, HttpContext, string>? GetUserSuk;
 
-        public Func<string, HttpContext, Task<string>> GetUserSukAsync;
+        public Func<string, HttpContext, Task<string>>? GetUserSukAsync;
 
-        internal string GetUserSukInternal(string idk, HttpContext context)
+        internal string? GetUserSukInternal(string idk, HttpContext context)
         {
             if (GetUserSuk != null)
             {
                 return GetUserSuk.Invoke(idk, context);
             }
-            else
+
+            if (GetUserSukAsync is null)
             {
-                var task = GetUserSukAsync.Invoke(idk, context);
-                task.Wait();
-                return task.Result;
+                return null;
             }
+            
+            var task = GetUserSukAsync.Invoke(idk, context);
+            task.Wait();
+            return task.Result;
+
         }
 
-        public Action<string, HttpContext> UnlockUser;
+        public Action<string, HttpContext>? UnlockUser;
         
-        public Func<string, HttpContext, Task> UnlockUserAsync;
+        public Func<string, HttpContext, Task>? UnlockUserAsync;
 
         internal void UnlockUserInternal(string idk, HttpContext context)
         {
-            if (UnlockUser != null)
+            if (UnlockUser is not null)
             {
                 UnlockUser.Invoke(idk, context);
             }
             else
             {
-                UnlockUserAsync.Invoke(idk, context).Wait();
+                UnlockUserAsync?.Invoke(idk, context).Wait();
             }
         }
 
-        public Action<string, HttpContext> LockUser { get; set; }
+        public Action<string, HttpContext>? LockUser { get; set; }
 
-        public Func<string, HttpContext, Task> LockUserAsync { get; set; }
+        public Func<string, HttpContext, Task>? LockUserAsync { get; set; }
 
         internal void LockUserInternal(string idk, HttpContext context)
         {
-            if (LockUser != null)
+            if (LockUser is not null)
             {
                 LockUser.Invoke(idk, context);
             }
             else
             {
-                LockUserAsync.Invoke(idk, context).Wait();
+                LockUserAsync?.Invoke(idk, context).Wait();
             }
         }
 
-        public Action<string, HttpContext> RemoveUser { get; set; }
+        public Action<string, HttpContext>? RemoveUser { get; set; }
 
-        public Func<string, HttpContext, Task> RemoveUserAsync { get; set; }
+        public Func<string, HttpContext, Task>? RemoveUserAsync { get; set; }
 
         internal void RemoveUserInternal(string idk, HttpContext context)
         {
-            if (RemoveUser != null)
+            if (RemoveUser is not null)
             {
                 RemoveUser.Invoke(idk, context);
             }
             else
             {
-                RemoveUserAsync.Invoke(idk, context).Wait();
+                RemoveUserAsync?.Invoke(idk, context).Wait();
             }
         }
 
-        public Func<string, HttpContext, NutInfo> GetAndRemoveNut;
+        public Func<string, HttpContext, NutInfo?>? GetAndRemoveNut;
 
-        public Func<string, HttpContext, Task<NutInfo>> GetAndRemoveNutAsync;
+        public Func<string, HttpContext, Task<NutInfo?>>? GetAndRemoveNutAsync;
 
-        private KeyValuePair<string, NutInfo> _currentNutInfo;
+        private KeyValuePair<string, NutInfo?> _currentNutInfo;
 
-        internal NutInfo GetAndRemoveNutInternal(string nut, HttpContext context)
+        internal NutInfo? GetAndRemoveNutInternal(string nut, HttpContext context)
         {
             if (_currentNutInfo.Key != nut)
             {
                 if (GetAndRemoveNut != null)
                 {
-                    _currentNutInfo = new KeyValuePair<string, NutInfo>(nut, GetAndRemoveNut.Invoke(nut, context));
+                    _currentNutInfo = new KeyValuePair<string, NutInfo?>(nut, GetAndRemoveNut.Invoke(nut, context));
                 }
                 else if (GetAndRemoveNutAsync != null)
                 {
                     var task = GetAndRemoveNutAsync.Invoke(nut, context);
                     task.Wait();
-                    _currentNutInfo = new KeyValuePair<string, NutInfo>(nut, task.Result);
+                    _currentNutInfo = new KeyValuePair<string, NutInfo?>(nut, task.Result);
                 }
                 else
                 {
-                    _currentNutInfo = new KeyValuePair<string, NutInfo>(nut, GetAndRemoveNutMethod(nut, context));
+                    _currentNutInfo = new KeyValuePair<string, NutInfo?>(nut, GetAndRemoveNutMethod(nut, context));
                 }
             }
 
             return _currentNutInfo.Value;
         }
 
-        public Action<string, NutInfo, bool, HttpContext> StoreNut;
+        public Action<string, NutInfo, bool, HttpContext>? StoreNut;
 
-        public Func<string, NutInfo, bool, HttpContext, Task> StoreNutAsync;
+        public Func<string, NutInfo, bool, HttpContext, Task>? StoreNutAsync;
 
         internal void StoreNutInternal(string nut, NutInfo info, bool authorized, HttpContext context)
         {
@@ -238,31 +256,30 @@ namespace SqrlForNet
             }
         }
 
-        public Func<string, HttpContext, NutInfo> RemoveAuthorizedNut;
+        public Func<string, HttpContext, NutInfo>? RemoveAuthorizedNut;
 
-        public Func<string, HttpContext, Task<NutInfo>> RemoveAuthorizedNutAsync;
+        public Func<string, HttpContext, Task<NutInfo>>? RemoveAuthorizedNutAsync;
 
-        internal NutInfo RemoveAuthorizedNutInternal(string nut, HttpContext context)
+        internal NutInfo? RemoveAuthorizedNutInternal(string nut, HttpContext context)
         {
             if (RemoveAuthorizedNut != null)
             {
                 return RemoveAuthorizedNut.Invoke(nut, context);
             }
-            else if (RemoveAuthorizedNutAsync != null)
-            {
-                var task = RemoveAuthorizedNutAsync.Invoke(nut, context);
-                task.Wait();
-                return task.Result;
-            }
-            else
+
+            if (RemoveAuthorizedNutAsync == null)
             {
                 return RemoveAuthorizedNutMethod(nut, context);
             }
+            
+            var task = RemoveAuthorizedNutAsync.Invoke(nut, context);
+            task.Wait();
+            return task.Result;
         }
 
-        public Action<string, string, HttpContext> StoreCpsSessionId;
+        public Action<string, string, HttpContext>? StoreCpsSessionId;
 
-        public Func<string,string, HttpContext, Task> StoreCpsSessionIdAsync;
+        public Func<string, string, HttpContext, Task>? StoreCpsSessionIdAsync;
 
         internal void StoreCpsSessionIdInternal(string code, string idk, HttpContext context)
         {
@@ -280,99 +297,101 @@ namespace SqrlForNet
             }
         }
 
-        public Func<string, HttpContext, string> GetUserIdAndRemoveCpsSessionId;
+        public Func<string, HttpContext, string>? GetUserIdAndRemoveCpsSessionId;
 
-        public Func<string, HttpContext, Task<string>> GetUserIdAndRemoveCpsSessionIdAsync;
+        public Func<string, HttpContext, Task<string>>? GetUserIdAndRemoveCpsSessionIdAsync;
 
-        internal string GetUserIdAndRemoveCpsSessionIdInternal(string code, HttpContext context)
+        internal string? GetUserIdAndRemoveCpsSessionIdInternal(string code, HttpContext context)
         {
-            if (GetUserIdAndRemoveCpsSessionId != null)
+            if (GetUserIdAndRemoveCpsSessionId is not null)
             {
                 return GetUserIdAndRemoveCpsSessionId.Invoke(code, context);
             }
-            else if (GetUserIdAndRemoveCpsSessionIdAsync != null)
+            if (GetUserIdAndRemoveCpsSessionIdAsync is not null)
             {
                 var task = GetUserIdAndRemoveCpsSessionIdAsync.Invoke(code, context);
                 task.Wait();
                 return task.Result;
             }
-            else
-            {
-                return GetUserIdAndRemoveCpsSessionIdMethod(code, context);
-            }
+            return GetUserIdAndRemoveCpsSessionIdMethod(code, context);
         }
 
-        public Action<string, HttpContext> SqrlOnlyReceived;
+        public Action<string, HttpContext>? SqrlOnlyReceived;
 
-        public Func<string, HttpContext, Task> SqrlOnlyReceivedAsync;
+        public Func<string, HttpContext, Task>? SqrlOnlyReceivedAsync;
 
         internal void SqrlOnlyReceivedInternal(string idk, HttpContext context)
         {
-            if (SqrlOnlyReceived != null)
+            if (SqrlOnlyReceived is not null)
             {
                 SqrlOnlyReceived.Invoke(idk, context);
             }
-            else
+            else if (SqrlOnlyReceivedAsync is not null)
             {
                 SqrlOnlyReceivedAsync.Invoke(idk, context).Wait();
             }
         }
 
-        public Action<string, HttpContext> HardlockReceived;
+        public Action<string, HttpContext>? HardlockReceived;
 
-        public Func<string, HttpContext, Task> HardlockReceivedAsync;
+        public Func<string, HttpContext, Task>? HardlockReceivedAsync;
 
         internal void HardlockReceivedInternal(string idk, HttpContext context)
         {
-            if (HardlockReceived != null)
+            if (HardlockReceived is not null)
             {
                 HardlockReceived.Invoke(idk, context);
             }
             else
             {
-                HardlockReceivedAsync.Invoke(idk, context).Wait();
+                HardlockReceivedAsync?.Invoke(idk, context).Wait();
             }
         }
 
-        public Func<HttpRequest, string, AskMessage> GetAskQuestion;
+        public Func<HttpRequest?, string, AskMessage>? GetAskQuestion;
 
-        public Func<HttpRequest, string, Task<AskMessage>> GetAskQuestionAsync;
+        public Func<HttpRequest?, string, Task<AskMessage>>? GetAskQuestionAsync;
 
-        internal AskMessage GetAskQuestionInternal(HttpRequest request, string nut)
+        internal AskMessage? GetAskQuestionInternal(HttpRequest? request, string nut)
         {
-            if (GetAskQuestion != null)
+            if (GetAskQuestion is not null)
             {
                 return GetAskQuestion.Invoke(request, nut);
             }
-            else
+
+            if (GetAskQuestionAsync is null)
             {
-                var task = GetAskQuestionAsync.Invoke(request, nut);
-                task.Wait();
-                return task.Result;
+                return null;
             }
+            
+            var task = GetAskQuestionAsync.Invoke(request, nut);
+            task.Wait();
+            return task.Result;
         }
 
-        public Func<HttpRequest, string, int, bool> ProcessAskResponse;
+        public Func<HttpRequest?, string, int, bool>? ProcessAskResponse;
 
-        public Func<HttpRequest, string, int, Task<bool>> ProcessAskResponseAsync;
+        public Func<HttpRequest?, string, int, Task<bool>>? ProcessAskResponseAsync;
 
-        internal bool ProcessAskResponseInternal(HttpRequest request, string nut, int button)
+        internal bool ProcessAskResponseInternal(HttpRequest? request, string nut, int button)
         {
             if (ProcessAskResponse != null)
             {
                 return ProcessAskResponse.Invoke(request, nut, button);
             }
-            else
+            if (ProcessAskResponseAsync is not null)
             {
                 var task = ProcessAskResponseAsync.Invoke(request, nut, button);
                 task.Wait();
                 return task.Result;
             }
+
+            return false;
         }
 
-        public Func<string, HttpContext, string> GetUsername;
+        public Func<string, HttpContext, string>? GetUsername;
 
-        public Func<string, HttpContext, Task<string>> GetUsernameAsync;
+        public Func<string, HttpContext, Task<string>>? GetUsernameAsync;
 
         internal string GetUsernameInternal(string userId, HttpContext context)
         {
@@ -418,7 +437,7 @@ namespace SqrlForNet
             }
         }
 
-        private NutInfo GetAndRemoveNutMethod(string nut, HttpContext httpContext)
+        private NutInfo? GetAndRemoveNutMethod(string nut, HttpContext httpContext)
         {
             ClearOldNuts();
             lock (NutList)
@@ -467,7 +486,7 @@ namespace SqrlForNet
             }
         }
 
-        private string GetNutIdkMethod(string nut, HttpContext httpContext)
+        private string? GetNutIdkMethod(string nut, HttpContext httpContext)
         {
             ClearOldNuts();
             lock (AuthorizedNutList)
@@ -486,7 +505,7 @@ namespace SqrlForNet
             }
         }
 
-        private string GetUserIdAndRemoveCpsSessionIdMethod(string sessionId, HttpContext context)
+        private string? GetUserIdAndRemoveCpsSessionIdMethod(string sessionId, HttpContext context)
         {
             lock (CpsSessions)
             {
@@ -690,15 +709,16 @@ namespace SqrlForNet
         protected internal class DiagnosticsInfo
         {
 
-            public string RequestUrl;
-            public List<string> Body;
+            public string? RequestUrl;
+            public List<string>? Body;
 
-            public List<string> ResponseBody;
+            public List<string>? ResponseBody;
 
         }
         
-        public static void LogTransaction(HttpRequest request, string response)
+        public static void LogTransaction(HttpRequest? request, string response)
         {
+            if (request is null) return;
             var info = new DiagnosticsInfo()
             {
                 RequestUrl = "[" + request.Method + "]" + request.Host + request.Path + request.QueryString,

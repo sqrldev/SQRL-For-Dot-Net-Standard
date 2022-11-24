@@ -24,7 +24,7 @@ namespace SqrlForNet
         public static HtmlString SqrlLink<TModel>(this IHtmlHelper<TModel> helper, HttpRequest request, string text, bool poll)
         {
             ValidateRequestData(request);
-            return SqrlLink(helper, request, text, poll, int.Parse(request.HttpContext.Items["CheckMilliSeconds"].ToString()));
+            return SqrlLink(helper, request, text, poll, int.Parse(request.HttpContext.Items["CheckMilliSeconds"].ToString() ?? string.Empty));
         }
 
         public static HtmlString SqrlLink<TModel>(this IHtmlHelper<TModel> helper, HttpRequest request, string text, bool poll, int pollTime)
@@ -86,7 +86,7 @@ namespace SqrlForNet
         public static HtmlString SqrlLinkForPath<TModel>(this IHtmlHelper<TModel> helper, HttpRequest request, string text, bool poll, string path)
         {
             ValidateRequestData(request, path);
-            return SqrlLinkForPath(helper, request, text, poll, int.Parse(request.HttpContext.Items["CheckMilliSeconds"].ToString()), path);
+            return SqrlLinkForPath(helper, request, text, poll, int.Parse(request.HttpContext.Items["CheckMilliSeconds"].ToString() ?? string.Empty), path);
         }
 
         public static HtmlString SqrlLinkForPath<TModel>(this IHtmlHelper<TModel> helper, HttpRequest request, string text, bool poll, int pollTime, string path)
@@ -145,7 +145,7 @@ namespace SqrlForNet
         public static HtmlString SqrlQrImage<TModel>(this IHtmlHelper<TModel> helper, HttpRequest request, bool poll)
         {
             ValidateRequestData(request);
-            return SqrlQrImage(helper, request, poll, int.Parse(request.HttpContext.Items["CheckMilliSeconds"].ToString()));
+            return SqrlQrImage(helper, request, poll, int.Parse(request.HttpContext.Items["CheckMilliSeconds"].ToString() ?? string.Empty));
         }
 
         public static HtmlString SqrlQrImage<TModel>(this IHtmlHelper<TModel> helper, HttpRequest request, bool poll, int pollTime)
@@ -188,7 +188,7 @@ namespace SqrlForNet
         public static HtmlString SqrlQrImageForPath<TModel>(this IHtmlHelper<TModel> helper, HttpRequest request, bool poll, string path)
         {
             ValidateRequestData(request, path);
-            return SqrlQrImageForPath(helper, request, poll, int.Parse(request.HttpContext.Items["CheckMilliSeconds"].ToString()), path);
+            return SqrlQrImageForPath(helper, request, poll, int.Parse(request.HttpContext.Items["CheckMilliSeconds"].ToString() ?? string.Empty), path);
         }
 
         public static HtmlString SqrlQrImageForPath<TModel>(this IHtmlHelper<TModel> helper, HttpRequest request, bool poll, int pollTime, string path)
@@ -197,7 +197,7 @@ namespace SqrlForNet
             var otherUrl = ((List<OtherUrlsData>)request.HttpContext.Items["OtherUrls"]).Single(x => x.Path == path);
             var stringWriter = new System.IO.StringWriter();
             var imgTag = new TagBuilder("img");
-            imgTag.MergeAttribute("src", "data:image/bmp;base64," + otherUrl.QrCodeBase64.ToString());
+            imgTag.MergeAttribute("src", "data:image/bmp;base64," + otherUrl.QrCodeBase64);
             imgTag.WriteTo(stringWriter, HtmlEncoder.Default);
             if (poll)
             {
@@ -237,7 +237,7 @@ namespace SqrlForNet
         public static HtmlString SqrlLinkAndImage<TModel>(this IHtmlHelper<TModel> helper, HttpRequest request, string text, bool poll)
         {
             ValidateRequestData(request);
-            return SqrlLinkAndImage(helper, request, text, poll, int.Parse(request.HttpContext.Items["CheckMilliSeconds"].ToString()));
+            return SqrlLinkAndImage(helper, request, text, poll, int.Parse(request.HttpContext.Items["CheckMilliSeconds"].ToString() ?? string.Empty));
         }
 
         public static HtmlString SqrlLinkAndImage<TModel>(this IHtmlHelper<TModel> helper, HttpRequest request, string text, bool poll, int pollTime)
@@ -259,7 +259,7 @@ namespace SqrlForNet
         public static HtmlString SqrlLinkAndImageForPath<TModel>(this IHtmlHelper<TModel> helper, HttpRequest request, string text, bool poll, string path)
         {
             ValidateRequestData(request, path);
-            return SqrlLinkAndImageForPath(helper, request, text, poll, int.Parse(request.HttpContext.Items["CheckMilliSeconds"].ToString()), path);
+            return SqrlLinkAndImageForPath(helper, request, text, poll, int.Parse(request.HttpContext.Items["CheckMilliSeconds"].ToString() ?? string.Empty), path);
         }
 
         public static HtmlString SqrlLinkAndImageForPath<TModel>(this IHtmlHelper<TModel> helper, HttpRequest request, string text, bool poll, int pollTime, string path)
@@ -268,7 +268,7 @@ namespace SqrlForNet
             return new HtmlString(SqrlLinkForPath(helper, request, text, poll, pollTime, path).ToString() + SqrlQrImageForPath(helper, request, false, path).ToString());
         }
 
-        private static void ValidateRequestData(HttpRequest request, string path = null)
+        private static void ValidateRequestData(HttpRequest request, string? path = null)
         {
             if (path != null)
             {

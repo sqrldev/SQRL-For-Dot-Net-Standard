@@ -1,7 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
     <Version>1.4.2</Version>
@@ -12,7 +11,8 @@
     <PackageProjectUrl>https://github.com/TechLiam/SQRL-For-Dot-Net-Standard</PackageProjectUrl>
     <RepositoryUrl>https://github.com/TechLiam/SQRL-For-Dot-Net-Standard</RepositoryUrl>
     <PackageTags>SQRL, Authentication, ASP.net, ASP.net core, .net core 3.0, ASP.net 3.0</PackageTags>
-    <PackageReleaseNotes>1.4.2 - Fix for user unlock not unlocking users
+    <PackageReleaseNotes>1.5.0 - Add DynamicOtherAuthenticationPaths to the options this when set is used over the existing OtherAuthenticationPaths but if not set then OtherAuthenticationPaths is used
+1.4.2 - Fix for user unlock not unlocking users
 1.4.1 - Fix for JSON comma missing and Linux new line issue
 1.4.0 - QR codes are now configurable from within the options, Fixed issue with EnableHelpers generating NUT's when it didn't need to
 1.3.0 - Fix for spelling mistake for MillieSeconds so its not MilliSeconds
@@ -37,10 +37,13 @@ Reduced the NUT size to 43 characters
     <RepositoryType>GitHub</RepositoryType>
     <SignAssembly>false</SignAssembly>
     <PackageIcon>sqrllogo.png</PackageIcon>
-    <PackageVersion>1.4.2</PackageVersion>
+    <PackageVersion>1.5.0</PackageVersion>
     <Title>SqrlForNet</Title>
-    <AssemblyVersion>1.4.2.0</AssemblyVersion>
-    <FileVersion>1.4.2.0</FileVersion>
+    <AssemblyVersion>1.5.0.0</AssemblyVersion>
+    <FileVersion>1.5.0.0</FileVersion>
+    <TargetFrameworks>net5.0;net6.0;net7.0;netstandard2.0;netstandard2.1</TargetFrameworks>
+    <LangVersion>latestmajor</LangVersion>
+    <Nullable>enable</Nullable>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
@@ -57,7 +60,9 @@ Reduced the NUT size to 43 characters
 
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Authentication" Version="2.2.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Html.Abstractions" Version="2.2.0" />
     <PackageReference Include="Microsoft.AspNetCore.Http" Version="2.2.2" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.ViewFeatures" Version="2.2.0" />
     <PackageReference Include="Net.Codecrete.QrCodeGenerator" Version="1.4.1" />
   </ItemGroup>
 

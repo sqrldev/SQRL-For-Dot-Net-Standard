@@ -33,7 +33,7 @@ namespace SqrlForNet.Chaos.NaCl
         /// <returns>True if signature is valid, false if it's not</returns>
         public static bool Verify(ArraySegment<byte> signature, ArraySegment<byte> message, ArraySegment<byte> publicKey)
         {
-            return Ed25519Operations.crypto_sign_verify(signature.Array, signature.Offset, message.Array, message.Offset, message.Count, publicKey.Array, publicKey.Offset);
+            return Ed25519Operations.crypto_sign_verify(signature.Array ?? Array.Empty<byte>(), signature.Offset, message.Array ?? Array.Empty<byte>(), message.Offset, message.Count, publicKey.Array ?? Array.Empty<byte>(), publicKey.Offset);
         }
 
         /// <summary>
@@ -56,7 +56,7 @@ namespace SqrlForNet.Chaos.NaCl
         /// <param name="expandedPrivateKey">Expanded form of private key</param>
         public static void Sign(ArraySegment<byte> signature, ArraySegment<byte> message, ArraySegment<byte> expandedPrivateKey)
         {
-            Ed25519Operations.crypto_sign(signature.Array, signature.Offset, message.Array, message.Offset, message.Count, expandedPrivateKey.Array, expandedPrivateKey.Offset);
+            Ed25519Operations.crypto_sign(signature.Array ?? Array.Empty<byte>(), signature.Offset, message.Array ?? Array.Empty<byte>(), message.Offset, message.Count, expandedPrivateKey.Array ?? Array.Empty<byte>(), expandedPrivateKey.Offset);
         }
 
         /// <summary>
@@ -125,9 +125,9 @@ namespace SqrlForNet.Chaos.NaCl
         public static void KeyPairFromSeed(ArraySegment<byte> publicKey, ArraySegment<byte> expandedPrivateKey, ArraySegment<byte> privateKeySeed)
         {
             Ed25519Operations.crypto_sign_keypair(
-                publicKey.Array, publicKey.Offset,
-                expandedPrivateKey.Array, expandedPrivateKey.Offset,
-                privateKeySeed.Array, privateKeySeed.Offset);
+                publicKey.Array ?? Array.Empty<byte>(), publicKey.Offset,
+                expandedPrivateKey.Array ?? Array.Empty<byte>(), expandedPrivateKey.Offset,
+                privateKeySeed.Array ?? Array.Empty<byte>(), privateKeySeed.Offset);
         }
     }
 }

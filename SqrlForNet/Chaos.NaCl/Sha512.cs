@@ -37,7 +37,7 @@ namespace SqrlForNet.Chaos.NaCl
         /// <param name="data">Array segment</param>
         public void Update(ArraySegment<byte> data)
         {
-            Update(data.Array, data.Offset, data.Count);
+            Update(data.Array ?? Array.Empty<byte>(), data.Offset, data.Count);
         }
 
         /// <summary>
@@ -104,14 +104,18 @@ namespace SqrlForNet.Chaos.NaCl
             block.x15 = (_totalBytes - 1) * 8;
             Sha512Internal.Core(out _state, ref _state, ref block);
 
-            ByteIntegerConverter.StoreBigEndian64(output.Array, output.Offset + 0, _state.x0);
-            ByteIntegerConverter.StoreBigEndian64(output.Array, output.Offset + 8, _state.x1);
-            ByteIntegerConverter.StoreBigEndian64(output.Array, output.Offset + 16, _state.x2);
-            ByteIntegerConverter.StoreBigEndian64(output.Array, output.Offset + 24, _state.x3);
-            ByteIntegerConverter.StoreBigEndian64(output.Array, output.Offset + 32, _state.x4);
-            ByteIntegerConverter.StoreBigEndian64(output.Array, output.Offset + 40, _state.x5);
-            ByteIntegerConverter.StoreBigEndian64(output.Array, output.Offset + 48, _state.x6);
-            ByteIntegerConverter.StoreBigEndian64(output.Array, output.Offset + 56, _state.x7);
+            if (output.Array is null)
+            {
+                return;
+            }
+            ByteIntegerConverter.StoreBigEndian64(output.Array!, output.Offset + 0, _state.x0);
+            ByteIntegerConverter.StoreBigEndian64(output.Array!, output.Offset + 8, _state.x1);
+            ByteIntegerConverter.StoreBigEndian64(output.Array!, output.Offset + 16, _state.x2);
+            ByteIntegerConverter.StoreBigEndian64(output.Array!, output.Offset + 24, _state.x3);
+            ByteIntegerConverter.StoreBigEndian64(output.Array!, output.Offset + 32, _state.x4);
+            ByteIntegerConverter.StoreBigEndian64(output.Array!, output.Offset + 40, _state.x5);
+            ByteIntegerConverter.StoreBigEndian64(output.Array!, output.Offset + 48, _state.x6);
+            ByteIntegerConverter.StoreBigEndian64(output.Array!, output.Offset + 56, _state.x7);
             _state = default(Array8<ulong>);
         }
 
